@@ -1,0 +1,82 @@
+{
+  "checked_date_shanghai": "2026-10-15",
+  "deepseek_official": {
+    "base_url": "https://api.deepseek.com",
+    "documented_model_ids": [
+      "deepseek-flash",
+      "deepseek-v4-pro"
+    ],
+    "credential_issuer": "DeepSeek official platform",
+    "paper_deepseek_v3_match": false,
+    "authenticated_models_check": "passed; deepseek-flash and deepseek-v4-pro returned",
+    "selected_model_id": "deepseek-v4-pro",
+    "selected_thinking_mode": "disabled",
+    "account_available_for_api": true,
+    "generation_check": "timed out; benchmark execution has not started",
+    "source": "https://api-docs.deepseek.com/"
+  },
+  "openrouter_v3_candidate": {
+    "base_url": "https://openrouter.ai/api/v1",
+    "model_id": "deepseek/deepseek-chat",
+    "provider_declared_model": "DeepSeek: DeepSeek V3",
+    "provider_declared_release_date": "2024-12-26",
+    "credential_issuer": "OpenRouter",
+    "requires_separate_api_key": true,
+    "paper_exact_checkpoint_verified": false,
+    "live_public_endpoint_check": {
+      "url": "https://openrouter.ai/api/v1/models/deepseek/deepseek-chat/endpoints",
+      "endpoints": [
+        {
+          "provider_name": "StreamLake",
+          "quantization": "unknown"
+        },
+        {
+          "provider_name": "DeepInfra",
+          "quantization": "fp4"
+        }
+      ]
+    },
+    "source": "https://openrouter.ai/deepseek/deepseek-chat/api",
+    "notes": "V3 candidate, not proof of the author's historical API checkpoint. Record selected inference provider and quantization before full benchmark runs. No API credentials stored."
+  },
+  "selected_profile": "deepseek_official_flash",
+  "doubao_ark_mini": {
+    "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    "model_id": "doubao-seed-2-0-mini-260428",
+    "credential_issuer": "Volcengine Ark",
+    "model_catalog_authentication": "passed",
+    "generation_check": "passed; minimal text generation completed in 1.58 seconds",
+    "request_args": {
+      "temperature": 0,
+      "extra_body": {
+        "thinking": {
+          "type": "disabled"
+        }
+      }
+    },
+    "pricing_and_checks": "doubao_api_check.json",
+    "chinatravel_smoke": "normal run interrupted during backtracking; Oracle single-query run completed and passed official evaluation",
+    "benchmark_model_id": "doubao-seed-2-0-mini-260428",
+    "smoke_summary": "doubao_smoke_summary.json"
+  },
+  "deepseek_official_flash": {
+    "model_id": "deepseek-flash",
+    "provider_declared_version": "DeepSeek-V4.1-Flash",
+    "base_url": "https://api.deepseek.com",
+    "checked_date_shanghai": "2026-10-17",
+    "thinking": "disabled",
+    "generation_check": "passed; minimal request completed in 1.17 seconds",
+    "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "five_query_preview": "flash_preview_20261017/outputs.json",
+    "paper_deepseek_v3_match": false,
+    "preview_status": "5 normal NeSy itineraries completed; all 5 passed official executable constraints. See qualitative pace and search-budget notes in report.",
+    "expanded_analysis": "flash_patterns_20261017/analysis.json",
+    "expanded_summary": {
+      "attempted": 14,
+      "saved_itineraries": 12,
+      "all_pass": 11,
+      "returned_itinerary_violations": 1,
+      "external_wall_timeouts": 2
+    }
+  }
+}

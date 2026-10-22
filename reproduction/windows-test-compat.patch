@@ -1,0 +1,14 @@
+diff --git a/tests/test_runtime_configuration.py b/tests/test_runtime_configuration.py
+index afa43b1..2d8c095 100644
+--- a/tests/test_runtime_configuration.py
++++ b/tests/test_runtime_configuration.py
+@@ -64,7 +64,8 @@ class RuntimeConfigurationTests(unittest.TestCase):
+             config_path = Path(temp_name) / "config.json"
+             write_api_config(config_path)
+ 
+-            with patch.dict(os.environ, {"HOME": temp_name}):
++            home_variable = "USERPROFILE" if os.name == "nt" else "HOME"
++            with patch.dict(os.environ, {home_variable: temp_name}):
+                 loaded_path, config = (
+                     build_translation_assets.load_translation_api_config(
+                         "~/config.json"

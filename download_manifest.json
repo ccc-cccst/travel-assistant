@@ -1,0 +1,293 @@
+{
+  "downloaded_utc": "2026-10-15T01:49:03.291364+00:00",
+  "datasets": [
+    {
+      "repo": "LAMDA-NeSy/ChinaTravel",
+      "revision": "a7d893afb628af6ca181625b6c7cca2d60a6bccb",
+      "files": [
+        {
+          "path": ".gitattributes",
+          "size": 2461,
+          "sha256": "e7a120ab07b1bc5b486be249e9fc6c83d59448d0093e1dfebe95d1566d9cafc0",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "DATA_QUALITY_FIXES_2026_08.md",
+          "size": 2607,
+          "sha256": "621bc1b39c5d77b449fdc9e1e6b80c9a826ec5bf77615d04c008dea9b8f72aec",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "DATA_QUALITY_REPAIRS_2026_08.json",
+          "size": 11379,
+          "sha256": "9fa9a0c8aa12846dc24c35d32591a845018e46c7a3d640a582ef45970aacda1f",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "PHASE2_RELEASE_NOTES.md",
+          "size": 3261,
+          "sha256": "b77ddc84adb71d77260474713dec2bf7bf8471afb730c5abc093f4ef453d2753",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "README.md",
+          "size": 8486,
+          "sha256": "d6516aa440045b84632d57f0c0c117e3048ad9cc45f6723b521e66fab3474127",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "easy.csv",
+          "size": 353344,
+          "sha256": "cb0b7940defa8a9b260bac12bee3fb3254678883b40371c3ca8f33c5f37153e3",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "human.csv",
+          "size": 171906,
+          "sha256": "2f0d61e37665a345bd428732ace6e1ce9d6de2af8d292047bcf5cc1c4f9cfc78",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "human1000.csv",
+          "size": 205683,
+          "sha256": "9fca5b9044fb351619f47e1573320cc512259fd3539d08937c62c560a54a7f05",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "medium.csv",
+          "size": 275424,
+          "sha256": "9cd49188a8f2a01b900abecc3f10263c257bcb761cf2635e5f0d4fb53d93f77b",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "phase2/competition_test.csv",
+          "size": 665811,
+          "sha256": "fbc3379e930c6fc22071bbd2fedaf7c4d34d47cc3a157e8db22cffeb99715447",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "phase2/part-00000.csv",
+          "size": 6591925,
+          "sha256": "b29f83271a374a4131ed30254e36ccc700beae953350c34baeed2fd271f1f42c",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "phase2/part-00001.csv",
+          "size": 6517770,
+          "sha256": "5dd3ed1f5a07a1d216f1a70d4b5d560fdf4e61d128de7d2f7eec56476348b5ef",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "phase2_audit_report.json",
+          "size": 62554,
+          "sha256": "d49fd009cd1169a505525fdeb671dab7136a4a7601817465018dd411f2489938",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference0_base50.csv",
+          "size": 78584,
+          "sha256": "a9b6d327e39f280735a181f2d169b8c7c0feeab9c8a67dedcc7a7f1d00c0d356",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference1_base50.csv",
+          "size": 87705,
+          "sha256": "d190734cb22e19359c9a116bc2f4d2e7a86ed29f3dcbb9cec986203ee3389fdb",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference2_base50.csv",
+          "size": 90548,
+          "sha256": "7ea3c22a899b28ec3e29b5947f22cd6e5ee57009e1ca3a435dcc82ca153bbced",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference3_base50.csv",
+          "size": 89198,
+          "sha256": "b44a2d0c39db6f881173f7ea09fe2b4cc6b5b1b47015b3cc252c7fbfaa99ee20",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference4_base50.csv",
+          "size": 79062,
+          "sha256": "feb8fc2c0b8ff308e29e17a6c004bf870d4ac5fbb8cd8fce5e82f52fe866e075",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference5_base50.csv",
+          "size": 97576,
+          "sha256": "9f8e2b7d2a8aa5fa4f97e62aead559f08a0ec955d09a4c5ddcadb0a82f34a076",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "preference_base50.csv",
+          "size": 60065,
+          "sha256": "3c83ea677c3d312e1d5d792b3e379c7d0d0ec90fc91ea1d161877f2f6bae7331",
+          "download_source": "existing verified local file"
+        }
+      ]
+    },
+    {
+      "repo": "LAMDA-NeSy/ChinaTravel-Sandbox",
+      "revision": "885c7dad143bf040238ddca263f4788d582ee0f4",
+      "files": [
+        {
+          "path": ".gitattributes",
+          "size": 2504,
+          "sha256": "9e75dd981de037ec3769f24f790e126bc5a160b6871f510214e68dc70649aeeb",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/.gitattributes"
+        },
+        {
+          "path": "README.md",
+          "size": 5556,
+          "sha256": "b8a143c9907789ad96fb55049eefec6e7d70c89c354b81c2258f2618aeaa1181",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/accommodations.parquet",
+          "size": 210185,
+          "sha256": "8e1b61f647e9a0ec8b7ef9695fb8eecbda8ffa421a890bbc8cf3331b6bb1a113",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/attractions.parquet",
+          "size": 125736,
+          "sha256": "413ddc7a9d9c6e4b41f16faf506e61b86d295fd602ded350a2d4388bdcd71079",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/flights.parquet",
+          "size": 15461,
+          "sha256": "34118a14d5b4615002f61ed46b0a49700fd79fa689f1e9f21bb95f8debec508b",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/poi.parquet",
+          "size": 426301,
+          "sha256": "c22de285f79c636369f5cc1d3c7df4ca1595c34d2674cfe3e87fc63af7420663",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/restaurants.parquet",
+          "size": 331613,
+          "sha256": "538c51244abb35054c905742de0efb974390062bd1f51c8ec1107f046cc11c24",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/subway_stations.parquet",
+          "size": 83186,
+          "sha256": "fe37a47e771806bb4f7f13f5da73f018590fa6af4dc4665d1670a836822e6b02",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/en/trains.parquet",
+          "size": 58373,
+          "sha256": "e144dbf4f0119f759891dc688f2627f89b42a4efb5a87c16083236d31ba22b93",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/zh/accommodations.parquet",
+          "size": 208340,
+          "sha256": "e316a06aa94107d6e535cb02f120fcdbef6120c5ee00c21862c25460c4d742d7",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/zh/attractions.parquet",
+          "size": 121679,
+          "sha256": "aa6ebb96f4f31b47fc90f1cb8b95d2d164202f99c1f0dac3398058cbb0e9ee7b",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/zh/flights.parquet",
+          "size": 15301,
+          "sha256": "e965e5db07cc0070460fc5fbbe400d7fa25bc028911d906faae329346743a987",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/zh/poi.parquet",
+          "size": 426387,
+          "sha256": "2c0cde306e15add7462fc0991ced1b133ca87277f842937a561538e1d101ecfd",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/zh/restaurants.parquet",
+          "size": 306558,
+          "sha256": "781893f1f8ae74af3dae2176b60665d12be41990163b25c579eff2ad84f3aaa9",
+          "download_source": "existing verified local file"
+        },
+        {
+          "path": "data/zh/subway_stations.parquet",
+          "size": 82081,
+          "sha256": "5259215b88ed360a050262cda6ffaf1a1e84912abd36942108525d734e16f42e",
+          "download_source": "https://modelscope.cn/datasets/Cbphcr/ChinaTravel-Sandbox/resolve/master/data/zh/subway_stations.parquet"
+        },
+        {
+          "path": "data/zh/trains.parquet",
+          "size": 58119,
+          "sha256": "e3be634fd1751b7bcc0df2d33345d0ffccd212871cf3f86c07c56d1a57af396f",
+          "download_source": "https://modelscope.cn/datasets/Cbphcr/ChinaTravel-Sandbox/resolve/master/data/zh/trains.parquet"
+        },
+        {
+          "path": "manifests/DATA_QUALITY_FIXES_2026_08.md",
+          "size": 1442,
+          "sha256": "4aea863fdbaf4db79547453fa4ed97dc3b9811c08a062c3384708e0c90615423",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/manifests/DATA_QUALITY_FIXES_2026_08.md"
+        },
+        {
+          "path": "manifests/ENGLISH_FIXES.md",
+          "size": 3339,
+          "sha256": "364952d26be05059b3c1f62fff5ea766dc816369a5b155922aa0f13abfc26931",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/manifests/ENGLISH_FIXES.md"
+        },
+        {
+          "path": "manifests/SHA256SUMS.en",
+          "size": 14995,
+          "sha256": "10284aa8ffea9973a38465a418ccddef0af11d00b922583cc2e4ca60e970a154",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/manifests/SHA256SUMS.en"
+        },
+        {
+          "path": "manifests/SHA256SUMS.zh",
+          "size": 14995,
+          "sha256": "43fe164ea607708e1d3bf1663a73b321ef00eff429a04d5a2edb03bea1d949e3",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/manifests/SHA256SUMS.zh"
+        },
+        {
+          "path": "manifests/data_quality_repairs_2026_08.json",
+          "size": 1328,
+          "sha256": "70f2e1d5ad8a52aedebf959ea8a3c84835d162f2c44893e825f676b363bdbb83",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/manifests/data_quality_repairs_2026_08.json"
+        },
+        {
+          "path": "manifests/english_manifest.json",
+          "size": 6860,
+          "sha256": "f82dd016c38644a030f9a290776451a4b61695bb0d22e05dec2e27076b6b2a5e",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/manifests/english_manifest.json"
+        },
+        {
+          "path": "raw/ChinaTravel_sandbox_en.zip",
+          "size": 1034319,
+          "sha256": "311e8beb69efeed032d5651b3e597e97c8b2120f6858b788bfa37658cc966c77",
+          "download_source": "https://modelscope.cn/datasets/Cbphcr/ChinaTravel-Sandbox/resolve/master/raw/ChinaTravel_sandbox_en.zip"
+        },
+        {
+          "path": "raw/ChinaTravel_sandbox_zh.zip",
+          "size": 1027737,
+          "sha256": "42d95ff7b8f96574d0ee972ca77599258e4854a219617868caeb462b79c715bd",
+          "download_source": "https://modelscope.cn/datasets/Cbphcr/ChinaTravel-Sandbox/resolve/master/raw/ChinaTravel_sandbox_zh.zip"
+        },
+        {
+          "path": "release_manifest.json",
+          "size": 4330,
+          "sha256": "0f683d97f340d37fd416458f72d17662d9d0246d571e629948bca2c93d00696a",
+          "download_source": "https://huggingface.co/datasets/LAMDA-NeSy/ChinaTravel-Sandbox/raw/885c7dad143bf040238ddca263f4788d582ee0f4/release_manifest.json"
+        }
+      ]
+    }
+  ],
+  "sandbox_extracted_files": {
+    "zh": 132,
+    "en": 132
+  },
+  "code_url": "https://github.com/LAMDA-NeSy/ChinaTravel",
+  "code_commit": "f445e0011f42594fcc29b8c752ece06ded9a8218"
+}

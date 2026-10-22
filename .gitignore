@@ -1,0 +1,43 @@
+# Credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+**/translation_api_config.json
+**/agent_env/config.toml
+
+# Python environments and caches
+**/.venv/
+**/venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Downloaded datasets, extracted data, and generated outputs
+/datasets/
+/tmp/
+/local_query_manifest.json
+/reproduction/runs/
+/reproduction/download_run_manifest.json
+/reproduction/*_report.json
+/reproduction/*_summary.json
+/reproduction/*_check*.json
+/reproduction/unit_test_summary.json
+/reproduction/flash_preview_20261017/*
+!/reproduction/flash_preview_20261017/selection.json
+/reproduction/flash_patterns_20261017/
+*.log
+*.tmp
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
