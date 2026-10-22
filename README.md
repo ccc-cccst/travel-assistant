@@ -48,7 +48,12 @@ Flash 启动器保存了 2026-10-17 实验使用的模型 ID 和版本声明。�
 
 ## 团队协作
 
-每项任务建一个分支，通过 Pull Request（合并申请）让另一位成员看过再合入 `main`。具体操作见 [协作指南](CONTRIBUTING.md)。
+每项任务建一个分支，通过 Pull Request（合并申请）让另一位成员看过再合入 `main`。
+
+- [团队协作规则](docs/TEAM_RULES.md)：任务、分工、分支、评审、数据和实验约定。
+- [协作指南](CONTRIBUTING.md)：GitHub Desktop 和命令行操作。
+- [AI 协作规则](AGENTS.md)：AI 编程助手在本仓库中的工作要求。
+- [实验记录模板](docs/EXPERIMENT_TEMPLATE.md)：记录配置、对照、失败和结论。
 
 首次发布由仓库所有者在本机登录 GitHub 后执行：
 
