@@ -1,5 +1,7 @@
 # 团队协作指南
 
+先阅读 [团队协作规则](docs/TEAM_RULES.md)。本页保留具体操作步骤；AI 编程助手同时读取 [AGENTS.md](AGENTS.md)。
+
 ## 先理解四个词
 
 - 仓库 Repository：GitHub 上保存代码和修改历史的项目。
@@ -13,7 +15,7 @@
 
 1. 打开 GitHub 项目页面，进入 **Settings → Collaborators**（界面也可能显示 Collaborators and teams）。
 2. 点击 **Add people**，输入朋友的 GitHub 用户名，发送邀请。
-3. 朋友接受邀请后，就可以克隆私有仓库和上传分支。
+3. 当前仓库公开，任何人都能查看和克隆；朋友接受协作者邀请后，才获得向本仓库上传分支的权限。
 
 朋友使用自己的账号，不需要共享账号密码或 API 密钥。发送邀请前核对用户名。
 
