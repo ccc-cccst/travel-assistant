@@ -1,0 +1,39 @@
+:root { color-scheme: light; background: #f2f5fa; color: #18304f; font: 16px/1.55 system-ui, sans-serif; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+main { width: min(940px, 100%); margin: auto; padding: 20px 22px 44px; }
+header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 22px; }
+header a { font-size: 21px; font-weight: 760; color: #214f90; text-decoration: none; }
+header span { color: #4d6281; font-size: 14px; }
+section, #facilitator { background: #fff; border: 1px solid #d4deec; border-radius: 13px; padding: 20px; }
+h1 { font-size: clamp(22px, 4vw, 30px); margin: 0 0 7px; letter-spacing: -.02em; }
+p { margin: 6px 0 14px; }
+form { display: grid; gap: 12px; }
+label { display: grid; gap: 5px; }
+input:not([type=radio]), select { min-height: 42px; width: 100%; padding: 6px 9px; border: 1px solid #aabdd6; border-radius: 7px; }
+button, input, select { font: inherit; color: inherit; }
+button { justify-self: start; cursor: pointer; border: 1px solid #295da8; background: #295da8; color: white;
+  border-radius: 8px; min-height: 44px; padding: 6px 15px; }
+button:disabled { opacity: .55; cursor: default; }
+button.quiet { margin-top: 12px; background: white; color: #355274; border-color: #b7c6d9; }
+fieldset { border: 1px solid #d4deec; border-radius: 8px; min-width: 0; }
+.options { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.options label { display: flex; align-items: center; padding: 6px 0; }
+#enroll { grid-template-columns: minmax(100px, 180px) auto; align-items: end; justify-content: start; }
+#facilitator { margin-top: 18px; }
+summary { cursor: pointer; font-weight: 660; }
+#studyStatus:empty, #comparisonFrame:empty { display: none; }
+#studyStatus:not(:empty) { color: #364c6d; margin: 10px 2px; }
+#comparisonFrame iframe { width: 100%; display: block; height: min(665px, 75dvh); min-height: 480px;
+  border: 1px solid #d4deec; border-radius: 10px; margin-bottom: 15px; }
+#recordList article { display: grid; gap: 4px; border-top: 1px solid #dce4ee; padding: 10px 0; overflow-wrap: anywhere; }
+#recordList article dl { margin: 0; }
+#recordList article dt { font-weight: 650; }
+#recordList article dd { margin: 0; }
+.review-inputs { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 570px) {
+  main { padding-inline: 12px; }
+  section, #facilitator { padding: 14px; }
+  #enroll { grid-template-columns: 1fr; }
+}

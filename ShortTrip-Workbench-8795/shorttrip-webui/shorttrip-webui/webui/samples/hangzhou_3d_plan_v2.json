@@ -1,0 +1,470 @@
+{
+ "people_number": 2,
+ "start_city": "上海",
+ "target_city": "杭州",
+ "itinerary": [
+  {
+   "day": 1,
+   "activities": [
+    {
+     "start_time": "08:00",
+     "end_time": "08:56",
+     "start": "上海虹桥站",
+     "end": "杭州东站",
+     "price": 73.0,
+     "cost": 146.0,
+     "tickets": 2,
+     "transports": [],
+     "TrainID": "G7501",
+     "type": "train"
+    },
+    {
+     "position": "西溪国家湿地公园",
+     "type": "attraction",
+     "price": 70.0,
+     "cost": 140.0,
+     "tickets": 2,
+     "start_time": "09:50",
+     "end_time": "12:00",
+     "transports": [
+      {
+       "start": "杭州东站",
+       "end": "西溪国家湿地公园",
+       "mode": "taxi",
+       "start_time": "08:56",
+       "end_time": "09:46",
+       "cost": 52.5,
+       "distance": 18.79,
+       "price": 52.5,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "外婆家(西溪天堂店)",
+     "type": "lunch",
+     "price": 129.0,
+     "cost": 258.0,
+     "start_time": "12:20",
+     "end_time": "13:20",
+     "transports": [
+      {
+       "start": "西溪国家湿地公园",
+       "end": "外婆家(西溪天堂店)",
+       "mode": "taxi",
+       "start_time": "12:00",
+       "end_time": "12:11",
+       "cost": 13.0,
+       "distance": 2.61,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "京杭大运河杭州景区",
+     "type": "attraction",
+     "price": 119.0,
+     "cost": 238.0,
+     "tickets": 2,
+     "start_time": "14:00",
+     "end_time": "16:30",
+     "transports": [
+      {
+       "start": "外婆家(西溪天堂店)",
+       "end": "京杭大运河杭州景区",
+       "mode": "taxi",
+       "start_time": "13:20",
+       "end_time": "13:49",
+       "cost": 30.5,
+       "distance": 10.01,
+       "price": 30.5,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "新白鹿餐厅(湖滨银泰in77C区店)",
+     "type": "dinner",
+     "price": 61.0,
+     "cost": 122.0,
+     "start_time": "17:20",
+     "end_time": "18:20",
+     "transports": [
+      {
+       "start": "京杭大运河杭州景区",
+       "end": "新白鹿餐厅(湖滨银泰in77C区店)",
+       "mode": "taxi",
+       "start_time": "16:30",
+       "end_time": "16:45",
+       "cost": 16.1,
+       "distance": 4.25,
+       "price": 16.1,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "杭州运河夜游",
+     "type": "attraction",
+     "price": 119.0,
+     "cost": 238.0,
+     "tickets": 2,
+     "start_time": "19:00",
+     "end_time": "20:30",
+     "transports": [
+      {
+       "start": "新白鹿餐厅(湖滨银泰in77C区店)",
+       "end": "杭州运河夜游",
+       "mode": "taxi",
+       "start_time": "18:20",
+       "end_time": "18:35",
+       "cost": 15.9,
+       "distance": 4.17,
+       "price": 15.9,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "杭州西湖湖滨平海路亚朵酒店",
+     "type": "accommodation",
+     "price": 482.0,
+     "cost": 482.0,
+     "room_type": 2,
+     "rooms": 1,
+     "start_time": "21:00",
+     "end_time": "24:00",
+     "transports": [
+      {
+       "start": "杭州运河夜游",
+       "end": "杭州西湖湖滨平海路亚朵酒店",
+       "mode": "taxi",
+       "start_time": "20:30",
+       "end_time": "20:44",
+       "cost": 14.6,
+       "distance": 3.63,
+       "price": 14.6,
+       "cars": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "day": 2,
+   "activities": [
+    {
+     "position": "白堤",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "08:30",
+     "end_time": "09:20",
+     "transports": [
+      {
+       "start": "杭州西湖湖滨平海路亚朵酒店",
+       "end": "白堤",
+       "mode": "taxi",
+       "start_time": "08:00",
+       "end_time": "08:10",
+       "cost": 13.0,
+       "distance": 2.05,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "平湖秋月",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "09:30",
+     "end_time": "10:15",
+     "transports": [
+      {
+       "start": "白堤",
+       "end": "平湖秋月",
+       "mode": "walk",
+       "start_time": "09:20",
+       "end_time": "09:27",
+       "cost": 0,
+       "distance": 0.57,
+       "price": 0
+      }
+     ]
+    },
+    {
+     "position": "楼外楼(西湖景区孤山路店)",
+     "type": "lunch",
+     "price": 177.0,
+     "cost": 354.0,
+     "start_time": "11:00",
+     "end_time": "12:00",
+     "transports": [
+      {
+       "start": "平湖秋月",
+       "end": "楼外楼(西湖景区孤山路店)",
+       "mode": "taxi",
+       "start_time": "10:15",
+       "end_time": "10:25",
+       "cost": 13.0,
+       "distance": 1.89,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "苏堤",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "12:30",
+     "end_time": "13:30",
+     "transports": [
+      {
+       "start": "楼外楼(西湖景区孤山路店)",
+       "end": "苏堤",
+       "mode": "taxi",
+       "start_time": "12:00",
+       "end_time": "12:10",
+       "cost": 13.0,
+       "distance": 2.03,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "三潭印月",
+     "type": "attraction",
+     "price": 55.0,
+     "cost": 110.0,
+     "tickets": 2,
+     "start_time": "13:45",
+     "end_time": "15:15",
+     "transports": [
+      {
+       "start": "苏堤",
+       "end": "三潭印月",
+       "mode": "walk",
+       "start_time": "13:30",
+       "end_time": "13:40",
+       "cost": 0,
+       "distance": 0.87,
+       "price": 0
+      }
+     ]
+    },
+    {
+     "position": "雷峰塔",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "15:40",
+     "end_time": "16:50",
+     "transports": [
+      {
+       "start": "三潭印月",
+       "end": "雷峰塔",
+       "mode": "taxi",
+       "start_time": "15:15",
+       "end_time": "15:23",
+       "cost": 13.0,
+       "distance": 1.19,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "清河坊街",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "17:20",
+     "end_time": "18:20",
+     "transports": [
+      {
+       "start": "雷峰塔",
+       "end": "清河坊街",
+       "mode": "taxi",
+       "start_time": "16:50",
+       "end_time": "17:02",
+       "cost": 13.0,
+       "distance": 2.84,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "知味观(湖滨店)",
+     "type": "dinner",
+     "price": 66.0,
+     "cost": 132.0,
+     "start_time": "18:40",
+     "end_time": "19:40",
+     "transports": [
+      {
+       "start": "清河坊街",
+       "end": "知味观(湖滨店)",
+       "mode": "taxi",
+       "start_time": "18:20",
+       "end_time": "18:29",
+       "cost": 13.0,
+       "distance": 1.87,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "断桥残雪",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "20:00",
+     "end_time": "20:50",
+     "transports": [
+      {
+       "start": "知味观(湖滨店)",
+       "end": "断桥残雪",
+       "mode": "taxi",
+       "start_time": "19:40",
+       "end_time": "19:49",
+       "cost": 13.0,
+       "distance": 1.84,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "杭州西湖湖滨平海路亚朵酒店",
+     "type": "accommodation",
+     "price": 482.0,
+     "cost": 482.0,
+     "room_type": 2,
+     "rooms": 1,
+     "start_time": "21:10",
+     "end_time": "24:00",
+     "transports": [
+      {
+       "start": "断桥残雪",
+       "end": "杭州西湖湖滨平海路亚朵酒店",
+       "mode": "taxi",
+       "start_time": "20:50",
+       "end_time": "21:00",
+       "cost": 13.0,
+       "distance": 2.06,
+       "price": 13.0,
+       "cars": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "day": 3,
+   "activities": [
+    {
+     "position": "灵隐寺",
+     "type": "attraction",
+     "price": 0.0,
+     "cost": 0.0,
+     "tickets": 2,
+     "start_time": "08:30",
+     "end_time": "10:00",
+     "transports": [
+      {
+       "start": "杭州西湖湖滨平海路亚朵酒店",
+       "end": "灵隐寺",
+       "mode": "taxi",
+       "start_time": "08:00",
+       "end_time": "08:24",
+       "cost": 25.0,
+       "distance": 7.81,
+       "price": 25.0,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "position": "灵隐飞来峰景区",
+     "type": "attraction",
+     "price": 45.0,
+     "cost": 90.0,
+     "tickets": 2,
+     "start_time": "10:03",
+     "end_time": "11:03",
+     "transports": [
+      {
+       "start": "灵隐寺",
+       "end": "灵隐飞来峰景区",
+       "mode": "walk",
+       "start_time": "10:00",
+       "end_time": "10:03",
+       "cost": 0,
+       "distance": 0.26,
+       "price": 0
+      }
+     ]
+    },
+    {
+     "position": "知味观·味庄(杨公堤店)",
+     "type": "lunch",
+     "price": 161.0,
+     "cost": 322.0,
+     "start_time": "11:40",
+     "end_time": "12:40",
+     "transports": [
+      {
+       "start": "灵隐飞来峰景区",
+       "end": "知味观·味庄(杨公堤店)",
+       "mode": "taxi",
+       "start_time": "11:03",
+       "end_time": "11:18",
+       "cost": 15.9,
+       "distance": 4.17,
+       "price": 15.9,
+       "cars": 1
+      }
+     ]
+    },
+    {
+     "start_time": "15:30",
+     "end_time": "16:28",
+     "start": "杭州东站",
+     "end": "上海虹桥站",
+     "price": 73.0,
+     "cost": 146.0,
+     "tickets": 2,
+     "transports": [
+      {
+       "start": "知味观·味庄(杨公堤店)",
+       "end": "杭州东站",
+       "mode": "taxi",
+       "start_time": "12:40",
+       "end_time": "13:19",
+       "cost": 40.7,
+       "distance": 14.06,
+       "price": 40.7,
+       "cars": 1
+      }
+     ],
+     "TrainID": "G7518",
+     "type": "train"
+    }
+   ]
+  }
+ ]
+}

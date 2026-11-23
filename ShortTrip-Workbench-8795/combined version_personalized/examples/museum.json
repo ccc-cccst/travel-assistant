@@ -1,0 +1,10 @@
+{
+  "uid": "museum_example",
+  "start_city": "南京",
+  "target_city": "上海",
+  "days": 2,
+  "people_number": 2,
+  "intercity_modes": ["train"],
+  "nature_language": "想逛博物馆，也想试试本帮菜。",
+  "profile": {"interests": ["museum"], "cuisines": ["本帮菜"]}
+}

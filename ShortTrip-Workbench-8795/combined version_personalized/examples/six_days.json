@@ -1,0 +1,10 @@
+{
+  "uid": "six_days_example",
+  "start_city": "南京",
+  "target_city": "上海",
+  "days": 6,
+  "people_number": 2,
+  "intercity_modes": ["train"],
+  "nature_language": "",
+  "profile": {"interests": ["museum", "park"], "pace": "relaxed"}
+}

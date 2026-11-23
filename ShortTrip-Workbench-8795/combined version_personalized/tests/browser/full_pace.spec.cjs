@@ -1,0 +1,58 @@
+const {test,expect}=require('playwright/test');
+const fs=require('node:fs');
+const path=require('node:path');
+const {randomUUID}=require('node:crypto');
+const root=path.resolve(__dirname,'../..');
+const stored='result/manual/b816f9a6eea84d438892b43dc3f33d89/request.json';
+
+test('充实节奏的西湖预览能切换行程并保存选择',async({page})=>{
+  const spec=JSON.parse(fs.readFileSync(path.join(root,stored),'utf8'));
+  spec.request_id=randomUUID().replaceAll('-','');
+  const location=path.join(root,'result/tripspec',spec.request_id);
+  fs.mkdirSync(location,{recursive:true});
+  fs.writeFileSync(path.join(location,'latest.json'),JSON.stringify(spec));
+  await page.goto('/tripspec?id='+spec.request_id);
+  await expect(page.getByLabel('节奏')).toHaveValue('full');
+  await page.getByRole('button',{name:'按这些需求规划'}).click();
+  const comparison=page.getByRole('group',{name:'比较待确认行程'});
+  const alternative=comparison.getByRole('button',{name:'备选 1'});
+  await expect(alternative).toBeVisible({timeout:65000});
+  const days=page.locator('.plan-day');
+  await expect(days.nth(1)).toContainText(/景点 [23] 处/);
+  await expect(days.nth(2)).toContainText(/景点 [23] 处/);
+  await expect(page.getByText(/充实 · [23]／3 天/)).toBeVisible();
+  const route=days.nth(1).locator('.route-detail');
+  await days.nth(1).getByRole('button',{name:'查看走法'}).click();
+  await expect(route.getByText(/按原顺序/)).toBeVisible({timeout:30000});
+  await days.nth(1).getByRole('button',{name:'顺路优化'}).click();
+  await expect(route.getByText(/地点间直线距离合计/)).toBeVisible({timeout:30000});
+  await expect(page.getByRole('button',{name:'接受这项调整'})).toBeVisible();
+  await alternative.click();
+  await expect(page.getByText(/对比推荐方案/)).toBeVisible();
+  await page.getByRole('button',{name:'接受这项调整'}).click();
+  await expect(page.locator('#recovery-adopted')).toBeVisible();
+  await expect(page.locator('#plan-variants').getByRole('button',{name:'备选 1'})).toHaveAttribute('aria-pressed','true');
+  await page.reload();
+  await expect(page.locator('#plan-variants').getByRole('button',{name:'备选 1'})).toHaveAttribute('aria-pressed','true');
+});
+
+test('纯表单提交的完成行程提供相同的走法和优化操作',async({page})=>{
+  await page.goto('/tripspec');
+  await page.getByLabel('出发地',{exact:true}).selectOption({label:'广州'});
+  await page.getByLabel('目的地',{exact:true}).selectOption({label:'杭州'});
+  await page.getByLabel('旅行天数').fill('3');
+  await page.getByLabel('同行人数',{exact:true}).fill('2');
+  await page.getByRole('button',{name:'核对我的需求'}).click();
+  await page.getByRole('button',{name:'按这些需求规划'}).click();
+  const day=page.locator('.plan-day').nth(1);
+  await expect(day.getByRole('button',{name:'查看走法'})).toBeVisible({timeout:65000});
+  await page.getByRole('navigation',{name:'逐日行程总览'}).getByRole('button').nth(1).click();
+  await expect(day.locator('ol.stop-list li').first()).toContainText(/景点|午餐|住宿/);
+  await day.locator('.point-keys button').first().click();
+  await expect(day.locator('.stop-list li:focus')).toBeVisible();
+  const detail=day.locator('.route-detail');
+  await day.getByRole('button',{name:'查看走法'}).click();
+  await expect(detail.getByText(/按原顺序/)).toBeVisible({timeout:30000});
+  await day.getByRole('button',{name:'顺路优化'}).click();
+  await expect(detail.getByText(/地点间直线距离合计/)).toBeVisible({timeout:30000});
+});

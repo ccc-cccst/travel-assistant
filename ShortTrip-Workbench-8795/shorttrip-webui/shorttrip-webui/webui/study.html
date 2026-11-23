@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShortTrip · 方案比较测试</title>
+  <link rel="stylesheet" href="study.css">
+  <script src="study-cases.js?v=1" defer></script>
+  <script src="study.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><a href="/">ShortTrip</a><span>使用测试</span></header>
+    <section id="setup">
+      <h1>选一份适合你的行程</h1>
+      <p>共两道题。每题有两份真实规划的测试方案，请选出符合你需求的一份，再写下选择理由。</p>
+      <form id="enroll">
+        <label>参与者编号 <input name="participant" pattern="P(0[1-9]|[1-9][0-9])" placeholder="P01" required autocomplete="off" maxlength="3"></label>
+        <button type="submit">开始或继续测试</button>
+      </form>
+      <p>用编号记录即可。答案保存在当前浏览器，由主持人导出。</p>
+    </section>
+    <p id="studyStatus" role="status"></p>
+    <section id="task" hidden>
+      <h1 id="taskTitle"></h1>
+      <p id="taskPrompt"></p>
+      <button id="showComparison" type="button">打开方案比较</button>
+      <div id="comparisonFrame"></div>
+      <form id="decision" hidden>
+        <fieldset>
+          <legend>你会选哪一份？</legend>
+          <div class="options">
+            <label><input type="radio" name="choice" value="reference" required> 首推</label>
+            <label><input type="radio" name="choice" value="alternative"> 备选 1</label>
+            <label><input type="radio" name="choice" value="undecided"> 还无法决定</label>
+          </div>
+        </fieldset>
+        <label>备选的主要好处 <input name="benefit" maxlength="160" required></label>
+        <label>备选的主要代价 <input name="tradeoff" maxlength="160" required></label>
+        <button type="submit">记录选择</button>
+      </form>
+      <button type="button" class="quiet" id="stopTask" hidden>记录为未完成</button>
+    </section>
+    <section id="finished" hidden>
+      <h1>两道题已记录</h1>
+      <p>请把页面交回主持人。</p>
+      <button type="button" id="nextParticipant">开始下一个参与者</button>
+    </section>
+    <details id="facilitator">
+      <summary>主持人记录</summary>
+      <p>测试中请合上此区域。提交后可以核对理由、补记求助，并导出所有参与者的记录。</p>
+      <div id="recordList"></div>
+      <button type="button" id="downloadStudy">导出记录</button>
+    </details>
+  </main>
+</body>
+</html>

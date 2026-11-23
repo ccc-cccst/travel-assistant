@@ -1,0 +1,54 @@
+{
+  "上海": {
+    "和颐至尊酒店(上海人民广场南京路步行街店)": {
+      "kind": "hotel",
+      "url": "https://www.bthhotels.com/wap/HotelInfo/0210M6?pt=info",
+      "label": "首旅如家官方预订"
+    },
+    "上海博物馆": {
+      "kind": "attraction",
+      "url": "https://www.shanghaimuseum.cn/mu/frontend/pg/service/visit-west",
+      "label": "人民广场馆官方票务",
+      "point": [31.234149, 121.482358],
+      "notice": "特展期间按馆方票务说明核对票种、价格与入场时段。"
+    }
+  },
+  "北京": {
+    "故宫博物院": {
+      "kind": "attraction",
+      "url": "https://www.dpm.org.cn/subject_booking/",
+      "label": "故宫官方预约说明"
+    }
+  },
+  "杭州": {
+    "灵隐寺": {
+      "kind": "attraction",
+      "url": "https://www.lingyinsi.org/list_57_2.html",
+      "label": "灵隐寺官方预约说明",
+      "notice": "景区实行分时预约，请以官方通告和预约小程序为准。"
+    },
+    "灵隐飞来峰景区": {
+      "kind": "attraction",
+      "url": "https://www.lingyinsi.org/list_57_2.html",
+      "label": "飞来峰官方预约说明"
+    },
+    "中国丝绸博物馆": {
+      "kind": "attraction",
+      "url": "https://www.chinasilkmuseum.com/cgjyy/index_6.aspx",
+      "label": "国丝参观及预约说明",
+      "notice": "散客和团队按场馆公布的不同条件核对。"
+    }
+  },
+  "成都": {
+    "成都大熊猫繁育研究基地": {
+      "kind": "attraction",
+      "url": "https://m.panda.org.cn/yd/service/",
+      "label": "熊猫基地官方票务"
+    },
+    "成都博物馆": {
+      "kind": "attraction",
+      "url": "https://www.cdmuseum.com/zhinan/index.html",
+      "label": "成都博物馆参观及预约"
+    }
+  }
+}

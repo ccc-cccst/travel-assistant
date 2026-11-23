@@ -1,0 +1,11 @@
+{
+  "uid": "four_day_appointment",
+  "start_city": "南京",
+  "target_city": "上海",
+  "days": 4,
+  "people_number": 2,
+  "intercity_modes": ["train"],
+  "nature_language": "",
+  "profile": {"interests": ["museum"], "pace": "relaxed"},
+  "appointments": [{"name": "上海博物馆", "day": 3, "start_time": "15:00", "duration_minutes": 60}]
+}

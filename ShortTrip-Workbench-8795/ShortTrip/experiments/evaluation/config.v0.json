@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "evaluation_version": "shorttrip_eval_v0.1",
+  "profile": "fast_rules_v0",
+  "tie_margin": 3.0,
+  "quality": {
+    "quality_weights": {"T": 0.30, "R": 0.25, "H": 0.10, "U": 0.10, "E": 0.25},
+    "activity_window": ["08:00", "21:00"],
+    "pace_target": [0.4, 0.8]
+  },
+  "validation": {},
+  "judge": {
+    "mode": "cache_only",
+    "base_url": "http://127.0.0.1:18080/v1",
+    "model": "qwen3.5-4b-q8",
+    "model_version": null,
+    "params": {"temperature": 0, "max_tokens": 2048},
+    "api_key_env": "SHORTTRIP_JUDGE_API_KEY",
+    "timeout_seconds": 60,
+    "max_attempts": 2,
+    "evaluation_version": "shorttrip_eval_v0.1"
+  }
+}

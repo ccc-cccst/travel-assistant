@@ -1,0 +1,39 @@
+{
+  "schema_version": "lesson_rules_v1",
+  "revision": "2026-11-19.1",
+  "rules": [
+    {
+      "id": "L002",
+      "title": "在模型调用前核对所要求的往返交通",
+      "review_status": "verified",
+      "enabled": true,
+      "phase": "before_model",
+      "handler": "transport_availability",
+      "scope": "active_snapshot_direct_city_pairs",
+      "evidence": ["result/experiments/P002_transport_failure_recheck/STATUS.json", "result/experiments/P002_browser/RESULT.json"],
+      "regression_test": "tests.test_lessons.LessonTests.test_missing_evidence_does_not_blacklist_city_pair"
+    },
+    {
+      "id": "L006",
+      "title": "预约先检查日序和重叠，最终核对实际执行时段",
+      "review_status": "verified",
+      "enabled": true,
+      "phase": "before_model",
+      "handler": "appointment_intervals",
+      "scope": "confirmed_locked_events",
+      "evidence": ["result/experiments/P001_live_v4/four_day_appointment/plan.json"],
+      "regression_test": "tests.test_personalization.PersonalizationTests.test_appointment_cannot_pass_if_removed"
+    },
+    {
+      "id": "L005",
+      "title": "官方模型请求禁用与本机依赖冲突的响应压缩",
+      "review_status": "verified",
+      "enabled": true,
+      "phase": "model_setup",
+      "handler": "identity_response_encoding",
+      "scope": "official_deepseek_client",
+      "evidence": ["result/experiments/P001_live_v2/API_PREFLIGHT.json", "result/experiments/P001_live_v4/API_PREFLIGHT.json"],
+      "regression_test": "tests.test_lessons.LessonTests.test_model_setup_policy_is_loaded_from_book"
+    }
+  ]
+}

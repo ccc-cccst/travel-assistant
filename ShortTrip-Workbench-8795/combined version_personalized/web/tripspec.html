@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShortTrip · 确认旅行需求</title>
+<style>
+:root{font:16px/1.65 "Microsoft YaHei UI",sans-serif;color:#183239;background:#f2f6f7;--a:#14737c;--b:#d5e2e5}*{box-sizing:border-box}body{margin:0}header{display:flex;justify-content:space-between;padding:15px max(5vw,18px);background:white;border-bottom:1px solid var(--b)}a{color:var(--a)}main{max-width:1060px;margin:30px auto;padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:24px}section,aside{min-width:0}h1,h2,h3,p{margin:0 0 12px}input,textarea,select,button{font:inherit}label{display:block}input:not([type=checkbox]):not([type=radio]),select,textarea{width:100%;display:block;border:1px solid #b8cfd4;background:#fff;border-radius:6px;margin:3px 0 12px;padding:8px 10px;color:inherit}textarea{min-height:110px;resize:vertical}details,aside{background:#fff;border:1px solid var(--b);border-radius:10px;padding:17px;margin:12px 0;align-self:start}summary{cursor:pointer}summary+div{margin-top:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.tags{display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap}button{border:0;border-radius:6px;padding:10px 16px;background:var(--a);color:white;font-weight:bold;cursor:pointer}button:disabled{opacity:.55;cursor:wait}[hidden]{display:none!important}.issue{padding:11px;margin:10px 0;background:#fff5df;border-left:3px solid #9d6c24}.issue label{margin:5px 0}.item{padding:7px 0;border-bottom:1px solid var(--b);overflow-wrap:anywhere}small{display:block;color:#516a6e}.group{margin-top:16px}@media(max-width:750px){main{grid-template-columns:1fr;margin-top:20px}h1{font-size:27px}}
+</style>
+<style>
+.plan-area{grid-column:1 / -1;background:#fff;border:1px solid var(--b);border-radius:10px;padding:clamp(15px,3vw,28px);scroll-margin-top:16px}.plan-tools,.plan-variants{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.plan-variants button,.route-button{color:var(--a);background:#eaf3f3}.plan-variants button[aria-pressed=true]{color:white;background:var(--a)}.plan-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin:14px 0}.plan-metrics div,.plan-day{padding:12px 14px;background:#f2f7f7;border-radius:8px}.plan-metrics strong{display:block;font-size:1.15rem}.plan-days{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));gap:12px}.plan-day ul,.plan-day ol{padding-left:22px}.plan-day li{margin:5px 0;overflow-wrap:anywhere}.plan-day time{display:inline-block;font-variant-numeric:tabular-nums}.route-button{padding:5px 9px}.route-detail{margin-top:10px}.plan-note{font-size:.9rem;color:#516a6e}.plan-notice{margin:10px 0}
+</style>
+<style>
+.route-actions{display:flex;gap:8px;flex-wrap:wrap}.route-options{padding:7px 10px;margin:6px 0 10px;font-size:.88rem}.route-options ul{padding-left:17px;margin:4px 0}.route-options .plan-note{margin:4px 0;font-size:inherit}.route-restricted{color:#516a6e}
+.trip-index{display:grid;gap:1px;background:var(--b);border:1px solid var(--b);border-radius:8px;overflow:hidden;margin:12px 0 22px}
+.trip-index button{display:flex;align-items:baseline;gap:14px;text-align:left;background:#f8fbfa;color:inherit;border-radius:0;font-weight:500}
+.trip-index b{white-space:nowrap;color:var(--a)}.plan-days{display:block}.plan-day{scroll-margin-top:12px;background:white;padding:20px 0;border-top:1px solid var(--b);border-radius:0}
+.day-content{display:grid;grid-template-columns:minmax(0,3fr) minmax(200px,2fr);gap:24px;align-items:start}.day-content>.stop-list:only-child{grid-column:1/-1}
+.plan-day .stop-list{list-style:none;padding:0;margin:0 0 10px}.plan-day .stop-list li{margin:0;padding:0 0 12px 15px;border-left:2px solid #ccdddc}
+.stop-kind,.leg-note{font-size:.83rem;color:#50676b}.stop-kind{font-weight:bold;color:var(--a)}.stop-list strong{display:block;font-size:1.04rem}.stop-list small{font-size:.86rem}.stop-list li:focus{outline:2px solid var(--a)}
+.leg-note{border-bottom:1px dashed #cedfde;padding:4px 0 7px;margin-bottom:6px}.point-map{margin:0;background:#eff6f4;padding:12px;border-radius:9px}.point-map canvas{display:block;width:100%;height:auto}
+.point-map figcaption{font-size:.86rem;color:#48605e}.point-keys{display:flex;flex-wrap:wrap;gap:4px}.point-keys button{padding:2px 6px;background:#fff;color:var(--a);font-size:.83rem}
+.stop-list time{margin-left:6px}.day-content+.route-actions{margin-top:6px}@media(max-width:700px){.day-content{grid-template-columns:1fr}.point-map{margin-bottom:12px}.trip-index button{padding:8px}.plan-day{padding:14px 0}}
+</style>
+<header><strong>ShortTrip</strong><a href="/">返回当前规划页</a></header>
+<main>
+<section><h1>这次，想怎么旅行？</h1><p>直接说你的想法，或点选已经确定的安排。</p>
+<form id="trip-form">
+<label>旅行想法<textarea name="raw_text" placeholder="想带家人去南京玩三天，尽量少走路。"></textarea></label>
+<details open><summary>已确定的安排</summary><div class="grid">
+<label>出发地<select name="start_city" aria-label="出发地"><option value="">未指定</option></select></label>
+<label>目的地<select name="target_city" aria-label="目的地"><option value="">未指定</option></select></label>
+<label>旅行天数<input name="days" type="number" min="1"></label>
+<label>同行人数<input name="people_number" type="number" min="1"></label>
+<label>出发日期（可选）<input name="start_date" type="date"></label>
+<label>整团总预算上限（元）<input name="budget" type="number" min="0" placeholder="未指定"></label>
+<label>城际交通<select name="mode"><option value="">未指定</option><option value="train">只坐火车</option><option value="airplane">只坐飞机</option></select></label>
+<label>市内交通<select name="local_mode"><option value="">不限</option><option value="metro">地铁和步行接驳</option><option value="taxi">只打车</option><option value="walk">全程步行</option></select></label>
+</div></details>
+<details><summary>住宿意向</summary><div class="grid">
+<label>房间数<input name="rooms" type="number" min="1" placeholder="未指定"></label>
+<label>房型意向<select name="room_type"><option value="">不限</option><option>单人房</option><option>大床房</option><option>双床房</option><option>单床房</option></select></label>
+</div></details>
+<details><summary>喜欢的体验</summary><div>
+<div class="tags"><label><input type="checkbox" name="interest" value="museum"> 博物馆</label><label><input type="checkbox" name="interest" value="history"> 历史文化</label><label><input type="checkbox" name="interest" value="park"> 公园</label><label><input type="checkbox" name="interest" value="nature"> 自然风光</label></div>
+<label>节奏<select name="pace"><option value="">未指定</option><option value="relaxed">轻松</option><option value="full">充实</option></select></label>
+</div></details>
+<details><summary>已确认的预约</summary><div class="grid">
+<label>预约地点<input name="appointment_name"></label>
+<label>第几天<input name="appointment_day" type="number" min="1"></label>
+<label>开始时间<input name="appointment_time" type="time"></label>
+<label>时长（分钟）<input name="appointment_duration" type="number" min="1"></label>
+</div></details>
+<button id="interpret" type="submit">核对我的需求</button>
+</form></section>
+<aside aria-live="polite">
+<h2>确认旅行需求</h2><p id="status">提交后会在这里显示已理解的要求。</p>
+<form id="resolution"><div id="questions"></div><button id="apply" type="submit" hidden>确认选择并继续规划</button></form>
+<div id="items"></div>
+<label id="budget-alternative" hidden><input id="try-budget-alternatives" type="checkbox"> 原预算排不成时，也看看更高预算的方案</label>
+<div class="plan-tools"><button id="start-plan" type="button" hidden>按确认后的需求规划</button></div>
+</aside>
+<section id="planning" class="plan-area" hidden aria-labelledby="plan-heading">
+<h2 id="plan-heading">旅行方案</h2><p id="plan-status" role="status"></p>
+<div id="plan-variants" class="plan-variants" aria-label="选择方案"></div>
+<div id="plan-result"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id),form=$('trip-form');
+const numeric=new Set(['days','people_number','budget','rooms']);
+const scalarNames=['start_city','target_city','start_date','room_type',...numeric];
+const appointmentFields={name:'appointment_name',day:'appointment_day',start_time:'appointment_time',duration_minutes:'appointment_duration'};
+let active=null;
+let planFlow=0;
+const stages={world_facts:'正在读取旅行数据',trip_sketch:'正在构想每天的安排',search:'正在试排班次、住宿和活动',assessment:'正在复核和比较方案',visit_refinement:'正在比较能顺路加入的体验，复核交通、费用和时间',extended_search:'正在比较其他逐日地点与交通住宿组合',recovery:'正在试排可行的调整'};
+const metricInfo={total_cost_cny:['整团参考费用','元'],city_transit_minutes:['市内接驳','分钟'],access_walk_minutes:['接驳步行','分钟'],visit_minutes:['游览时长','分钟']};
+const comparisonMetrics={...metricInfo,full_visit_days:['充实游览日','天']};
+const expenseLabels={intercity:'往返班次',admission:'景点门票',meals:'餐费',lodging:'住宿',city_transit:'市内接驳'};
+const kinds={train:'火车',airplane:'航班',attraction:'景点',accommodation:'住宿',lunch:'午餐',dinner:'晚餐',breakfast:'早餐'};
+const pendingInfo={current_ticket_and_room_availability:'实时余票与余房',date_specific_prices_and_opening:'出行当天的价格和开放时间',inside_attraction_walking:'景点内步行',actual_room_type_and_occupancy:'实际房型和入住人数',specific_experience_departure:'夜游当天的开船场次',calendar_start_date:'具体出发日期',weekend_date:'具体周末日期和当日班次、营业情况'};
+const goalStatuses={matched:'已安排',unmet:'未安排',insufficient_evidence:'待确认',measured:'已纳入方案比较'};
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const number=new Intl.NumberFormat('zh-CN',{maximumFractionDigits:2});
+async function api(path,payload){
+  const r=await fetch(path,payload?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}:{});
+  const result=await r.json();if(!r.ok)throw Error(result.message||'请求失败，请重试。');return result;
+}
+function node(tag,text='',style=''){const n=document.createElement(tag);n.textContent=text;if(style)n.className=style;return n;}
+function valueText(a){
+  const v=a.value;
+  if(a.field==='start_date'&&/^(今天|明天|后天|(?:本周|下周)[一二三四五六日天末]?)$/.test(v))return v+'（先按行程日规划）';
+  if(a.field==='appointment'&&v&&typeof v==='object')return [v.name,'第 '+v.day+' 天',v.start_time,v.duration_minutes+' 分钟'].join(' · ');
+  const units={'CNY/group':'元（整团）','CNY/person':'元／人','CNY/group/night':'元／团／晚','CNY/person/night':'元／人／晚','CNY/person/meal':'元／人／餐'};
+  return (a.operator==='lte'?'≤ ':a.operator==='approx'?'约 ':'')+(Array.isArray(v)?v.join('、'):String(v??''))+(units[a.unit]?' '+units[a.unit]:'');
+}
+function roomCount(item){
+  return item.rooms ? (item.estimated_rooms?'暂按 ':'')+item.rooms+' 间' : '';
+}
+function evidence(a){return [a.source,...(a.additional_sources||[])].map(s=>s.text||(s.type==='form'?'表单填写':s.type==='user_confirmation'?'用户已确认':s.type==='assumption'?'可修改的默认值':'')).filter(Boolean).join(' · ');}
+function render(spec){
+  active=spec;$('status').textContent=spec.ready?'需求已核对，可以作为规划输入。':'请查看以下待确认事项。';
+  $('start-plan').hidden=false;$('start-plan').disabled=false;
+  $('budget-alternative').hidden=!spec.ready||!spec.items.some(a=>a.field==='budget'&&a.scope==='total_trip'&&a.operator==='lte'&&a.strength==='hard');
+  $('start-plan').textContent=spec.ready?'按这些需求规划':'先看可行方案';
+  $('questions').replaceChildren();$('items').replaceChildren();let options=0;
+  for(const q of spec.issues){
+    const box=node('div',q.message,'issue');
+    if(q.input_type==='date'){
+      const date=document.createElement('input');date.type='date';date.name=q.id;date.setAttribute('aria-label','确认出发日期');
+      box.append(date);options++;
+    }
+    if(q.input_type==='number'){
+      const count=document.createElement('input');count.type='number';count.min='1';count.step='1';
+      count.name=q.id;count.setAttribute('aria-label','确认同行人数');
+      box.append(count);options++;
+    }
+    for(const [i,a] of (q.choices||[]).entries()){
+      const radio=document.createElement('input');radio.type='radio';radio.name=q.id;radio.value=i;
+      const label=node('label');label.append(radio,document.createTextNode(' '+valueText(a)+' · '+evidence(a)));box.append(label);options++;
+    }
+    $('questions').append(box);
+  }
+  $('apply').hidden=!options;
+  for(const [kind,title] of [['fact','旅行事实'],['hard','必须满足'],['soft','希望满足']]){
+    const items=spec.items.filter(a=>a.strength===kind);if(!items.length)continue;
+    const group=node('div','','group');group.append(node('h3',title));
+    for(const a of items){
+      const row=node('div',a.label+' · '+valueText(a),'item');row.append(node('small',evidence(a)));group.append(row);
+    }
+    $('items').append(group);
+  }
+}
+function dayMap(items,rows){
+  const stops=items.map((item,i)=>({item,i})).filter(({item})=>Number.isFinite(item.location?.lat)&&Number.isFinite(item.location?.lon));
+  if(stops.length<2)return null;
+  const fig=node('figure','','point-map'),canvas=document.createElement('canvas');
+  canvas.width=500;canvas.height=290;canvas.setAttribute('aria-hidden','true');
+  const ctx=canvas.getContext('2d');if(!ctx)return null;
+  const lat=stops.map(s=>s.item.location.lat),lon=stops.map(s=>s.item.location.lon);
+  const west=Math.min(...lon),east=Math.max(...lon),south=Math.min(...lat),north=Math.max(...lat);
+  const projection=Math.cos((south+north)*Math.PI/360);
+  const scale=Math.min(432/Math.max(.002,(east-west)*projection),230/Math.max(.002,north-south));
+  const dots=stops.map(({item,i})=>({x:250+(item.location.lon-(west+east)/2)*projection*scale,y:145-(item.location.lat-(south+north)/2)*scale,i}));
+  ctx.lineWidth=3;ctx.strokeStyle='#91b9b2';ctx.setLineDash([6,5]);
+  for(let j=1;j<dots.length;j++){const a=dots[j-1],b=dots[j];if(b.i===a.i+1){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+  const keys=node('div','','point-keys');
+  function focus(i){rows[i].focus({preventScroll:true});rows[i].scrollIntoView({block:'center',behavior:'smooth'});}
+  for(const {x,y,i} of dots){
+    ctx.fillStyle='#14645d';ctx.beginPath();ctx.arc(x,y,13,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='white';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 16px sans-serif';ctx.fillText(i+1,x,y);
+    const key=node('button',(i+1)+' '+items[i].name);key.type='button';key.onclick=()=>focus(i);keys.append(key);
+  }
+  canvas.onclick=e=>{const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*500/r.width,y=(e.clientY-r.top)*290/r.height;
+    const near=dots.findLast(p=>Math.hypot(p.x-x,p.y-y)<16);if(near)focus(near.i);};
+  fig.append(node('figcaption','当日地点方位 · 北朝上，虚线表示先后顺序'),canvas,keys);return fig;
+}
+function itineraryDay(day,city){
+  const block=node('article','','plan-day');block.tabIndex=-1;
+  const stops=day.activities,visits=stops.filter(i=>i.kind==='attraction');
+  const title=visits.slice(0,2).map(i=>i.name).join('、')||city||'往返与接驳';
+  block.append(node('h3','第 '+day.day+' 天 · '+title));
+  const detail=['景点 '+visits.length+' 处'];
+  if(day.ordered)detail.push('游览 '+day.visit_minutes+' 分钟','市内接驳约 '+day.transit_minutes+' 分钟');
+  else detail.push('已保存的地点集合，点击查看走法读取顺序');
+  if(Number.isFinite(day.group_cost_cny))detail.push('整团参考 ¥'+number.format(day.group_cost_cny));
+  block.append(node('p',detail.join(' · '),'plan-note'));
+  const content=node('div','','day-content'),list=node(day.ordered?'ol':'ul','','stop-list'),rows=[];
+  const modes={walk:'步行',metro:'地铁',taxi:'驾车'};
+  stops.forEach((item,i)=>{
+    const line=node('li');line.tabIndex=-1;rows.push(line);
+    if(day.ordered&&item.incoming_minutes>0){const mode=(item.incoming_modes||[]).map(m=>modes[m]||m).join('＋');
+      line.append(node('div',mode+'约 '+item.incoming_minutes+' 分钟','leg-note'));}
+    line.append(node('span',(day.ordered?(i+1)+' · ':'')+(item.locked?'已预约':kinds[item.kind]),'stop-kind'),node('strong',item.name));
+    const facts=[item.service,item.time,item.requested_period,(item.tags||[]).slice(0,2).join('、'),
+      item.stay_minutes?'安排 '+item.stay_minutes+' 分钟':'',roomCount(item)];
+    if(Number.isFinite(item.group_cost_cny))facts.push('整团参考 ¥'+number.format(item.group_cost_cny));
+    line.append(node('small',facts.filter(Boolean).join(' · ')));
+    const clock=m=>m>1440?'次日 '+clock(m-1440):[Math.floor(m/60),m%60].map(x=>String(x).padStart(2,'0')).join(':');
+    if(item.opening_windows?.length)line.append(node('small','参考营业时间 '+item.opening_windows.map(([a,b])=>clock(a)+'–'+clock(b)).join('、')));
+    else if(item.opening?.open&&item.opening.close)line.append(node('small','参考营业时间 '+item.opening.open+'–'+item.opening.close));
+    if(item.reference_dishes?.length)line.append(node('small','参考菜品 · '+item.reference_dishes.join('、')));
+    if(item.reference_stay_hours?.length){const [low,high]=item.reference_stay_hours;
+      line.append(node('small','景点参考游玩时长 '+(low===high?low:low+'–'+high)+' 小时'));}
+    list.append(line);
+  });
+  content.append(list);
+  if(day.ordered){const map=dayMap(stops,rows);if(map)content.append(map);}
+  block.append(content);return block;
+}
+function showCard(card,comparison,jobId,attemptId=null){
+  const area=$('plan-result');area.replaceChildren();
+  if(card.delivery_status==='core_experience_pending'){
+    const missing=card.goals.filter(goal=>goal.primary&&goal.status!=='matched').map(goal=>goal.value);
+    area.append(node('p','核心体验待补 · '+missing.join('、'),'plan-notice'));
+  }
+  const named=card.goals.filter(g=>['attraction','restaurant','hotel'].includes(g.field)&&
+    ['prefer','prioritize','select','include','eq','accept','any_of','allowed_set'].includes(g.operator));
+  if(named.length===1&&['unmet','insufficient_evidence'].includes(named[0].status)){
+    const goal=named[0], label=Array.isArray(goal.value)?goal.value.join('、'):goal.value;
+    const detail=goal.reason==='missing_entity_evidence'?'本地目录暂未找到对应地点':'请核对这项愿望';
+    area.append(node('p',label+'尚未排入 · '+detail,'plan-notice'));
+  }
+  const metrics=node('div','','plan-metrics');
+  for(const [key,[label,unit]] of Object.entries(metricInfo)){
+    const tile=node('div',label);tile.append(node('strong',number.format(card.metrics[key])+' '+unit));metrics.append(tile);
+  }
+  area.append(metrics);
+  for(const check of card.budget_checks||[]){
+    const {cny_per_group:amount,limit}=check.observed;
+    area.append(node('p',check.label+' · '+number.format(amount)+'／'+number.format(limit)+' 元（整团）','plan-note'));
+  }
+  if(Number.isFinite(card.metrics.longest_transfer_minutes)){
+    area.append(node('p','最长一段市内接驳约 '+number.format(card.metrics.longest_transfer_minutes)+' 分钟','plan-note'));
+  }
+  const cost=node('details');
+  const expenses=node('ul');
+  for(const [type,value] of Object.entries(card.metrics.cost_breakdown_cny))
+    expenses.append(node('li',expenseLabels[type]+' · '+number.format(value)+' 元'));
+  cost.append(node('summary','参考费用明细'),expenses);
+  area.append(cost);
+  if(comparison){
+    const changes=Object.entries(comparison.delta_from_recommended).filter(([key,value])=>value!==0&&comparisonMetrics[key])
+      .map(([key,value])=>comparisonMetrics[key][0]+' '+(value>0?'+':'−')+number.format(Math.abs(value))+' '+comparisonMetrics[key][1]);
+    if(changes.length)area.append(node('p','对比推荐方案 · '+changes.join(' · '),'plan-notice'));
+  }
+  const placeGoals=card.goals.filter(g=>g.status!=='not_applicable');
+  if(placeGoals.length){
+    const goals=node('ul');
+    for(const goal of placeGoals){
+      const value=Array.isArray(goal.value)?goal.value.join('、'):String(goal.value);
+      const label=goal.field==='experience_example'?'类似'+value+'的景点':value;
+      const reasons={ambiguous_reference:'需确认具体地点',no_schedulable_catalog_match:'本地快照未找到可试排地点',
+        matching_places_not_scheduled:'有匹配地点，本轮未排入'};
+      const progress=Number.isInteger(goal.full_visit_days)?
+        goal.full_visit_days+'／'+card.days.length+' 天安排 2 处景点或至少 3 小时游览':
+        goal.matched_count>0?'已安排 '+goal.matched_count+' 处':goalStatuses[goal.status];
+      goals.append(node('li',[label,goal.preferred_start?'晚间游览':'',progress,reasons[goal.reason]].filter(Boolean).join(' · ')));
+    }
+    area.append(node('h3','你的偏好'),goals);
+  }
+  const checks=card.pending.map(p=>pendingInfo[p]||p);
+  if(card.room_notes?.length&&card.days.some(day=>day.activities.some(item=>item.kind==='accommodation')))
+    area.append(node('p','房型意向 · '+card.room_notes.flat().join('、')+' · 预订时核实','plan-note'));
+  if(checks.length)area.append(node('p','出行前待核实 · '+checks.join('、'),'plan-note'));
+  const days=node('div','','plan-days'),index=node('nav','','trip-index');
+  index.setAttribute('aria-label','逐日行程总览');
+  metrics.after(node('h2',(card.city||'')+'行程总览'),index);
+  for(const day of card.days){
+    const block=itineraryDay(day,card.city);
+    const jump=node('button');jump.type='button';
+    const names=day.activities.filter(i=>i.kind==='attraction').map(i=>i.name);
+    jump.append(node('b','第 '+day.day+' 天'),node('span',names.join(day.ordered?' → ':'、')||'往返与接驳'));
+    jump.onclick=()=>{block.focus({preventScroll:true});block.scrollIntoView({behavior:'smooth',block:'start'});};index.append(jump);
+    if(jobId){
+      const actions=node('div','','route-actions');
+      const detail=node('div','','route-detail');detail.setAttribute('aria-live','polite');
+      for(const [label,viewOnly] of [['查看走法',true],['顺路优化',false]]){
+        const button=node('button',label,'route-button');button.type='button';
+        button.addEventListener('click',()=>showRoute(jobId,card.id,day.day,viewOnly,actions,detail,attemptId));
+        actions.append(button);
+      }
+      block.append(actions,detail);
+    }
+    days.append(block);
+  }
+  area.append(days);
+  if(jobId&&!attemptId&&card.days.some(d=>d.activities.some(a=>a.kind==='accommodation'))){
+    const button=node('button','换一家交通更方便的酒店','route-button');button.type='button';
+    const feedback=node('div','','plan-note');feedback.setAttribute('aria-live','polite');
+    area.append(button,feedback);
+    button.onclick=async()=>{
+      button.disabled=true;feedback.textContent='正在保留景点、餐厅和往返，比较其他酒店…';
+      try{
+        const job=await api('/trip-planning/hotel',{job_id:jobId,candidate_id:card.id});
+        while(button.isConnected){
+          const status=await api('/trip-planning/job?id='+job.id);
+          if(!['starting','planning'].includes(status.state)){
+            if(!status.hotel_change)throw Error(status.message);
+            const change=status.hotel_change;
+            feedback.replaceChildren(node('p',change.old_hotel+' → '+change.new_hotel));
+            for(const [key,[label,unit]] of Object.entries(metricInfo)){
+              feedback.append(node('p',label+' · '+number.format(change.before[key])+' → '+number.format(change.after[key])+' '+unit));
+            }
+            const accept=node('button','采用新酒店'),cancel=node('button','保留原方案');
+            accept.type=cancel.type='button';feedback.append(accept,cancel);
+            cancel.onclick=()=>{feedback.textContent='已保留原方案。';button.disabled=false;};
+            accept.onclick=async()=>{
+              accept.disabled=true;
+              try{await api('/trip-planning/hotel/accept',{job_id:job.id});
+                location.assign('/tripspec?'+new URLSearchParams({id:active.request_id,job:job.id}));
+              }catch(error){feedback.append(node('p',error.message));accept.disabled=false;}
+            };
+            return;
+          }
+          await wait(600);
+        }
+      }catch(error){feedback.textContent=error.message;button.disabled=false;}
+    };
+  }
+}
+function transportOptions(segment){
+  const details=node('details','','route-options');
+  details.append(node('summary',segment.from+' → '+segment.to));
+  if(Number.isFinite(segment.straight_line_km))
+    details.append(node('p','两点直线距离 '+number.format(segment.straight_line_km)+' 公里','plan-note'));
+  const labels={metro:'公共交通',taxi:'驾车',walk:'步行'};
+  const states={restricted:'受已确认的交通要求限制',unavailable:'当前快照无可用路线',deadline:'本次查询到限，可重试'};
+  const list=node('ul');
+  for(const option of segment.options){
+    const estimate=option.status==='estimated';
+    let text=labels[option.mode]+' · ';
+    if(estimate){
+      text+='约 '+number.format(option.duration_minutes)+' 分钟';
+      if(option.mode==='taxi')text+='（按出租车估算，打车参考 '+number.format(option.party_cost_cny)+' 元）';
+      if(option.mode==='metro'){
+        const rail=option.legs.filter(leg=>leg.mode==='metro');
+        text+='（地铁 '+rail[0].from+' → '+rail[rail.length-1].to+'，含步行接驳，整团参考 '+number.format(option.party_cost_cny)+' 元）';
+      }
+    }else{
+      text+=states[option.status]||'暂无数据';
+    }
+    list.append(node('li',text,estimate?'':'route-restricted'));
+  }
+  details.append(list);
+  return details;
+}
+function routeNote(route){
+  if(!route.distance)
+    return route.minutes_saved?'少接驳 '+route.minutes_saved+' 分钟':'已复核，沿用原顺序';
+  const {before_km:before,after_km:after,missing_places:missing}=route.distance;
+  if(missing?.length)return '地点坐标待核实 · '+missing.join('、');
+  if(route.result==='improved'){
+    const fmt=new Intl.NumberFormat('zh-CN',{maximumFractionDigits:number.format(before)===number.format(after)?4:2});
+    return '地点间直线距离合计 '+fmt.format(before)+' → '+fmt.format(after)+' 公里';
+  }
+  const caption=route.result==='viewed'?'按原顺序':route.stop_reason==='deadline'?'限时内沿用原顺序':'本次沿用原顺序';
+  return caption+' · 地点间直线距离合计 '+number.format(after)+' 公里';
+}
+async function showRoute(jobId,candidate,day,viewOnly,actions,detail,attemptId){
+  for(const button of actions.children)button.disabled=true;
+  detail.textContent=viewOnly?'正在查询交通选项…':'正在比较游览顺序…';
+  try{
+    const job=await api('/trip-planning/route',{job_id:jobId,candidate_id:candidate,day,view_only:viewOnly,
+      ...(attemptId?{attempt_id:attemptId}:{})});
+    for(;;){
+      const status=await api('/trip-planning/job?id='+encodeURIComponent(job.id));
+      if(status.route){
+        const route=status.route;
+        const list=node('ol');
+        const modes={walk:'步行',metro:'地铁',taxi:'出租车'};
+        const segments=new Map((route.segments||[]).map(s=>[s.activity_index,s]));
+        for(const [index,item] of route.activities.entries()){
+          const text=[item.name,item.service,item.time,roomCount(item)].filter(Boolean).join(' · ');
+          const access=(item.incoming_modes||[]).map(mode=>modes[mode]).filter(Boolean).join('＋');
+          const line=node('li',text);
+          const segment=segments.get(index);
+          if(segment)line.prepend(transportOptions(segment));
+          else if(!route.segments&&item.incoming_minutes)
+            line.prepend(document.createTextNode(access+' '+item.incoming_minutes+' 分钟 · '));
+          list.append(line);
+        }
+        detail.replaceChildren(node('p',routeNote(route),'plan-note'));
+        if(route.segments?.length)detail.append(node('p','交通选项为本地快照估算，展开每段查看。','plan-note'));
+        detail.append(list);
+        break;
+      }
+      if(!['starting','planning'].includes(status.state))throw Error(status.message||'路线未能核验，请重试。');
+      await wait(650);
+    }
+  }catch(error){detail.textContent=error.message;}
+  finally{for(const button of actions.children)button.disabled=false;}
+}
+function addCandidateChoices(tabs,view,display,focus){
+  if(view.candidates.length===1){
+    tabs.append(node('p',view.verified_count===1?'本次只有一份行程通过核验。':
+      '本轮其他候选没有足够明显的取舍，当前展示推荐方案。','plan-note'));
+  }
+  const choose=(card,button)=>{
+    for(const b of tabs.querySelectorAll('button'))b.setAttribute('aria-pressed',String(b===button));
+    display(card,view.alternatives.find(a=>a.id===card.id));
+  };
+  for(const [index,card] of view.candidates.entries()){
+    const button=node('button',card.id===view.recommended_id?'推荐方案':'备选 '+index);button.type='button';
+    button.addEventListener('click',()=>choose(card,button));tabs.append(button);
+  }
+  const index=view.candidates.findIndex(c=>c.id===focus);
+  tabs.querySelectorAll('button')[Math.max(index,0)]?.click();
+}
+function showChoices(view,jobId){
+  const tabs=$('plan-variants');tabs.replaceChildren();
+  addCandidateChoices(tabs,view,(card,comparison)=>showCard(card,comparison,jobId),
+    new URLSearchParams(location.search).get('candidate'));
+}
+function changeText(change){
+  if(change.parts)return change.parts.map(changeText).join(' · ');
+  const describe=value=>Array.isArray(value)?value.join('／'):String(value);
+  return change.label+' · '+describe(change.before)+' → '+describe(change.after);
+}
+function showRecovery(recovery,jobId,flow){
+  const variants=$('plan-variants'),area=$('plan-result');
+  variants.replaceChildren();
+  area.replaceChildren();
+  const notes=node('div','','plan-notice');
+  if(recovery.cause?.message)notes.append(node('p',recovery.cause.message));
+  for(const issue of recovery.cause?.issues||[])notes.append(node('p',issue.message));
+  for(const attempt of recovery.attempts){
+    const detail=attempt.view?'已核验 '+attempt.view.verified_count+' 份候选':
+      attempt.state==='running'?'正在试排':attempt.message;
+    notes.append(node('p',attempt.action+' · '+detail));
+  }
+  const previews=recovery.attempts.filter(a=>a.view);
+  if(previews.length){
+    const select=attempt=>{
+      const choices=node('div','','plan-variants');
+      choices.setAttribute('role','group');
+      choices.setAttribute('aria-label','比较待确认行程');
+      addCandidateChoices(choices,attempt.view,(card,comparison)=>{
+      showCard(card,comparison,jobId,attempt.id);
+      const banner=node('div','','plan-notice');
+      const accept=node('button','接受这项调整');accept.type='button';
+      const feedback=node('p');feedback.setAttribute('aria-live','polite');
+      accept.addEventListener('click',async()=>{
+        accept.disabled=true;
+        try{
+          const spec=await api('/trip-planning/recovery/accept',{job_id:jobId,attempt_id:attempt.id});
+          if(flow!==planFlow)return;
+          render(spec);
+          const url=new URL(location.href);url.searchParams.set('candidate',card.id);
+          history.replaceState(null,'',url);
+          const next=++planFlow;
+          await monitorPlan(jobId,next);
+        }catch(error){feedback.textContent=error.message;accept.disabled=false;}
+      });
+      banner.append(node('h3','调整后的完整行程 · 待你决定'),node('p',changeText(attempt.change)),accept,feedback);
+      const target=(attempt.change.parts||[attempt.change]).find(part=>part.field==='budget');
+      if(target){
+        const people=active.items.find(item=>item.field==='people')?.value??1;
+        const limit=target.before*(target.label.startsWith('人均')?people:1);
+        const extra=card.metrics.total_cost_cny-limit;
+        if(extra>0)accept.before(node('p','这套行程的整团参考费用比原预算多 '+number.format(extra)+' 元。'));
+      }
+      area.prepend(notes,choices,banner);
+      });
+    };
+    if(previews.length===1){
+      select(previews[0]);
+      return;
+    }
+    for(const attempt of previews){
+      const button=node('button',changeText(attempt.change));button.type='button';
+      button.addEventListener('click',()=>{
+        for(const item of variants.children)item.setAttribute('aria-pressed',String(item===button));
+        select(attempt);
+      });
+      variants.append(button);
+    }
+    variants.firstElementChild.click();
+    return;
+  }
+  area.append(notes);
+  if(!recovery.draft){
+    if(recovery.state==='complete')area.append(node('p',active.issues.length?
+      '请在上方确认待定的需求后再试。':'可以回到需求修改相关条件后再提交一次。','plan-note'));
+    return;
+  }
+  const draft=recovery.draft;
+  const card=node('article','','plan-day');
+  card.append(node('h3',draft.city+'当地游览建议'),node('p',draft.condition));
+  const list=node('ol');
+  for(const stop of draft.stops)list.append(node('li',stop.name+' · 建议预留 '+stop.stay_minutes+' 分钟'));
+  card.append(list);
+  if(draft.segment){
+    const modes={walk:'步行',metro:'地铁接驳',taxi:'驾车'};
+    card.append(node('p',draft.segment.from+' → '+draft.segment.to+' · '+modes[draft.segment.mode]+
+      '约 '+draft.segment.duration_minutes+' 分钟','plan-note'));
+  }
+  card.append(node('p','仍待安排 · '+draft.pending.join('、'),'plan-note'));
+  area.append(card);
+}
+async function monitorPlan(id,flow){
+  let showedFirst=false;
+  let lastRecovery='';
+  while(flow===planFlow){
+    const status=await api('/trip-planning/job?id='+encodeURIComponent(id));
+    if(flow!==planFlow)return;
+    if(status.request_id&&(status.request_id!==active?.request_id||status.request_revision!==active?.request_revision))
+      throw Error('这次规划对应另一个需求版本，请按当前需求重新规划。');
+    if(status.first&&!showedFirst){
+      showCard(status.first.candidate,null,null);
+      showedFirst=true;
+    }
+    if(status.state==='complete'&&status.result){
+      const fallback=status.model?.error?' · 已采用程序构想':'';
+      const count=status.result.verified_count;
+      const pending=status.delivery_status==='core_experience_pending'?' · 核心体验待补':'';
+      $('plan-status').textContent='已完成快照核验 · '+count+' 份候选'+fallback+pending;
+      showChoices(status.result,id);
+      if(status.hotel_parent){
+        const back=node('a','重新打开换酒店前的原方案');
+        back.href='/tripspec?'+new URLSearchParams({id:active.request_id,job:status.hotel_parent.job_id,
+                                                   candidate:status.hotel_parent.candidate_id});
+        $('plan-result').prepend(back,node('p',status.hotel_accepted?'已保存换酒店后的行程。':'换酒店预览尚待采纳。'));
+      }
+      if(status.recovered){
+        $('recovery-adopted')?.remove();
+        const banner=node('div','','plan-notice');
+        banner.append(node('p',status.recovered.original_failure),node('p',status.recovered.change?
+          '已接受的调整 · '+changeText(status.recovered.change):'重新试排后已找到符合原要求的行程。'));
+        $('plan-variants').before(banner);
+        banner.id='recovery-adopted';
+      }
+      return;
+    }
+    if(status.recovery?.cause){
+      const current=JSON.stringify(status.recovery);
+      if(current!==lastRecovery){showRecovery(status.recovery,id,flow);lastRecovery=current;}
+      const live=['starting','planning'].includes(status.state);
+      $('plan-status').textContent=live?'正在试排可行的调整':
+        status.recovery.attempts.some(a=>a.view)?'已有调整后的方案，请选择是否采用':
+        status.recovery.draft?'已给出可用的当地游览建议':status.message;
+      if(!live)return;
+      await wait(600);
+      continue;
+    }
+    if(!['starting','planning'].includes(status.state)){
+      const info=[status.message,status.error_code].filter(Boolean).join(' · ');
+      $('plan-status').textContent=info||'规划未完成，请重试。';
+      const items=status.evidence?.unsupported_requirements||status.evidence?.conflicting_requirements||[];
+      if(items.length){
+        const list=node('ul');for(const item of items)list.append(node('li',[item.label,valueText(item),item.planning_note].filter(Boolean).join(' · ')));
+        $('plan-result').append(list);
+      }
+      return;
+    }
+    const phrase=stages[status.stage]||'正在启动规划';
+    $('plan-status').textContent=showedFirst?'首份方案已通过核验 · '+phrase:phrase;
+    await wait(600);
+  }
+}
+$('start-plan').addEventListener('click',async()=>{
+  const spec=active,flow=++planFlow;if(!spec)return;
+  $('recovery-adopted')?.remove();
+  $('planning').hidden=false;$('plan-result').replaceChildren();$('plan-variants').replaceChildren();
+  $('plan-status').textContent='正在启动规划';$('start-plan').disabled=true;
+  $('planning').scrollIntoView({behavior:'smooth'});
+  try{
+    const job=await api('/trip-planning',{request_id:spec.request_id,request_revision:spec.request_revision,
+      try_budget_alternatives:!$('budget-alternative').hidden&&$('try-budget-alternatives').checked});
+    if(flow!==planFlow)return;
+    const params=new URLSearchParams({id:spec.request_id,job:job.id});
+    history.replaceState(null,'','/tripspec?'+params);
+    await monitorPlan(job.id,flow);
+  }catch(error){if(flow===planFlow)$('plan-status').textContent=error.message;}
+  finally{if(flow===planFlow)$('start-plan').disabled=false;}
+});
+form.addEventListener('input',()=>{
+  if(!active)return;
+  active=null;planFlow++;
+  $('try-budget-alternatives').checked=false;$('budget-alternative').hidden=true;
+  $('start-plan').hidden=true;$('planning').hidden=true;
+  $('status').textContent='需求已修改，请重新核对后规划。';
+});
+async function busy(action){
+  $('apply').disabled=true;$('interpret').disabled=true;
+  try{await action();}catch(error){$('status').textContent=error.message;}
+  finally{$('apply').disabled=false;$('interpret').disabled=false;}
+}
+form.addEventListener('submit',event=>{
+  event.preventDefault();const input=new FormData(form),fields={};
+  for(const k of scalarNames){const v=input.get(k);if(v)fields[k]=numeric.has(k)?Number(v):v;}
+  if(input.get('mode'))fields.intercity_modes=[input.get('mode')];
+  if(input.get('local_mode'))fields.local_modes=[input.get('local_mode')];
+  const interests=input.getAll('interest'),pace=input.get('pace');
+  if(interests.length||pace)fields.profile={...(interests.length?{interests}:{}),...(pace?{pace}:{})};
+  const appointment=Object.fromEntries(Object.entries(appointmentFields).map(([k,name])=>[k,input.get(name)]));
+  if(Object.values(appointment).some(Boolean)){appointment.day=Number(appointment.day);appointment.duration_minutes=Number(appointment.duration_minutes);fields.appointments=[appointment];}
+  $('status').textContent='正在核对需求…';
+  busy(async()=>{const spec=await api('/tripspec/interpret',{raw_text:input.get('raw_text'),form:fields});
+    render(spec);history.replaceState(null,'','/tripspec?id='+encodeURIComponent(spec.request_id));});
+});
+$('resolution').addEventListener('submit',event=>{
+  event.preventDefault();if(!active)return;
+  const choices=Object.fromEntries([...new FormData(event.target)].filter(([,v])=>v!=='')
+    .map(([k,v])=>[k,active.issues.find(q=>q.id===k)?.input_type==='date'?v:Number(v)]));
+  if(!Object.keys(choices).length){$('status').textContent='请先选择要采用的值。';return;}
+  busy(async()=>{
+    const updated=await api('/tripspec/resolve',{request_id:active.request_id,request_revision:active.request_revision,choices});
+    planFlow++;$('planning').hidden=true;
+    history.replaceState(null,'','/tripspec?id='+encodeURIComponent(updated.request_id));
+    render(updated);
+    if(updated.ready)$('start-plan').click();
+  });
+});
+async function boot(){
+  try{
+    const options=await api('/options');
+    for(const city of options.cities)for(const k of ['start_city','target_city'])form.elements[k].add(new Option(city,city));
+    const id=new URLSearchParams(location.search).get('id');if(!id)return;
+    const spec=await api('/tripspec/state?id='+encodeURIComponent(id));
+    form.elements.raw_text.value=spec.raw_text;
+    for(const k of scalarNames)form.elements[k].value=spec.form[k]??'';
+    form.elements.mode.value=spec.form.intercity_modes?.[0]??'';
+    form.elements.local_mode.value=spec.form.local_modes?.[0]??'';
+    form.elements.pace.value=spec.form.profile?.pace??'';
+    for(const item of form.querySelectorAll('[name=interest]'))item.checked=spec.form.profile?.interests?.includes(item.value)??false;
+    for(const [k,name] of Object.entries(appointmentFields))form.elements[name].value=spec.form.appointments?.[0]?.[k]??'';
+    render(spec);
+    const savedJob=new URLSearchParams(location.search).get('job');
+    if(savedJob){
+      const flow=++planFlow;
+      $('planning').hidden=false;$('start-plan').disabled=true;
+      if(!location.hash)$('planning').scrollIntoView({block:'start'});
+      try{await monitorPlan(savedJob,flow);}
+      catch(error){if(flow===planFlow)$('plan-status').textContent=error.message;}
+      finally{if(flow===planFlow)$('start-plan').disabled=false;}
+    }
+  }catch(error){$('status').textContent=error.message;}
+}
+boot();
+</script>
+</html>

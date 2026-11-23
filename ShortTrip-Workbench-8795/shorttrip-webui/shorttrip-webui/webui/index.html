@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+if (location.origin === "http://127.0.0.1:8791") location.replace("legacy-workbench.html" + location.search);
+</script>
+<title>ShortTrip 行程助手</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="vendor/leaflet.min.css">
+<link rel="stylesheet" href="vendor/MarkerCluster.min.css">
+<link rel="stylesheet" href="style.css?v=map-place-filters">
+</head>
+<body>
+<!-- 顶栏 -->
+<header class="topbar">
+  <span class="logo" data-ic="logo" title="ShortTrip"></span>
+  <i class="vsep"></i>
+  <button class="ib" id="menuBtn" data-ic="menu" title="我的行程"></button>
+  <h1 id="title" title="点击修改标题"></h1>
+  <button class="new-plan-btn" id="startTrip" type="button" hidden>新建规划</button>
+  <button class="date-btn" id="dateBtn"><span data-ic="calendar"></span><span id="dateText">设置出发日期</span></button>
+  <div class="spacer"></div>
+  <div class="survey-wrap">
+    <button class="survey" id="surveyBtn">😆 满意度调研</button>
+    <div class="survey-tip" id="surveyTip" hidden>1分钟小调研，告诉我们你的使用体验，<br>帮助我们不断优化产品。<button class="x" id="surveyTipX" data-ic="close"></button></div>
+  </div>
+  <button class="ib" id="historyBtn" data-ic="history" title="历史版本"></button>
+  <button class="ib" id="downloadBtn" data-ic="download" title="下载"></button>
+  <button class="ib" id="shareBtn" data-ic="share" title="分享"></button>
+  <i class="vsep"></i>
+  <button class="ib" id="moreBtn" data-ic="more" title="更多"></button>
+</header>
+
+<!-- 左侧抽屉：我的行程 -->
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-h">我的行程<button class="ib" id="drawerX" data-ic="close"></button></div>
+  <button class="new-trip" id="newTripBtn"><span data-ic="plus"></span>新建行程</button>
+  <div class="drawer-list" id="drawerList"></div>
+  <details id="legacyHistory" hidden>
+    <summary>迁移旧版浏览器记录</summary>
+    <button type="button" data-history-port="8791">从 8791 迁入</button>
+    <button type="button" data-history-port="8805">从 8805 迁入</button>
+    <button type="button" data-history-port="8797">从 8797 迁入</button>
+    <button type="button" data-history-copies hidden>查看旧版草稿与对话</button>
+    <button type="button" data-history-undo hidden>撤销最近一次迁入</button>
+  </details>
+</aside>
+<div class="mask" id="mask" hidden></div>
+
+<main class="layout" id="layout">
+  <!-- 左：AI 助手 -->
+  <section class="pane ai" id="aiPane">
+    <div class="ai-h">
+      <span class="ai-title"><span data-ic="sparkle"></span>AI助手</span><small id="sampleMode" class="sample-mode" hidden>示例行程</small>
+      <span class="spacer"></span>
+      <button class="ib" id="aiMore" data-ic="more" title="更多"></button>
+      <button class="ib" id="aiCollapse" data-ic="collapse" title="收起"></button>
+    </div>
+    <div class="chat" id="chat"></div>
+    <button class="to-bottom" id="toBottom" data-ic="arrowDown" hidden></button>
+    <form class="ask" id="askForm">
+      <textarea id="askInput" rows="1" aria-label="行程助手输入" placeholder="任何旅游相关的问题都可以问我哦"></textarea>
+      <button type="submit" id="sendBtn" data-ic="send" title="发送" disabled></button>
+    </form>
+  </section>
+  <button class="ai-fab" id="aiFab" hidden><span data-ic="sparkle"></span>AI助手</button>
+
+  <!-- 中：行程 -->
+  <section class="pane plan" id="planPane">
+    <div class="plan-h">
+      <nav class="main-tabs" id="mainTabs">
+        <button data-tab="detail" class="on">行程详情</button>
+        <button data-tab="booking">预订管理</button>
+      </nav>
+      <span class="spacer"></span>
+      <div class="view-toggle" id="viewToggle">
+        <button data-view="card" class="on" data-ic="image" title="图文"></button>
+        <button data-view="list" data-ic="list" title="列表"></button>
+      </div>
+      <button class="ib" id="planExpand" data-ic="expand" title="展开"></button>
+    </div>
+    <div class="chips-bar" id="chipsBar">
+      <div class="day-chips" id="dayChips"></div>
+      <label class="day-jump" id="dayJump" hidden><span>查看</span>
+        <select id="dayJumpSelect" aria-label="选择查看的行程日期"></select>
+      </label>
+      <button class="add-day" id="addDay" data-ic="plusCircle" title="添加一天"></button>
+    </div>
+    <div class="trip-review-bar" id="tripReviewBar" hidden>
+      <button id="reviewBtn">出发前核对</button>
+      <span id="reviewCount"></span>
+      <button id="compareBtn" hidden>比较版本</button>
+      <button id="mobilePlanFeedback" hidden>评价方案</button>
+    </div>
+    <nav id="archiveOptions" class="archive-options" aria-label="已核验行程方案" hidden></nav>
+    <details id="transferReview" hidden>
+      <summary>预约与返程接驳 <span id="transferState"></span></summary>
+      <label>旅行第一天 <input id="transferStart" type="date"></label>
+      <button id="transferRetry" type="button">核对接驳</button>
+      <div id="transferRows" aria-live="polite"></div>
+    </details>
+    <div id="archiveError" class="warn-box" role="status" hidden></div>
+    <section id="onlineStatus" class="online-status" aria-label="规划状态" hidden></section>
+    <section id="onlineIntake" class="online-intake" aria-label="个性化规划" hidden></section>
+    <div class="plan-body" id="planBody"></div>
+    <div class="batch-bar" id="batchBar" hidden></div>
+  </section>
+
+  <!-- 右：地图 -->
+  <section class="pane mapwrap" id="mapPane">
+    <div class="map-top">
+      <div class="map-filters" id="mapFilters"></div>
+      <button class="mf-arrow" id="mfArrow" data-ic="chevronRight"></button>
+      <button class="mf-btn" id="mapCollapse" data-ic="collapse" title="收起地图"></button>
+    </div>
+    <div id="map"></div>
+    <div class="map-weather" id="mapWeather" role="status" hidden>
+      <span class="weather-glyph" aria-hidden="true"><i></i></span>
+      <span class="map-weather-info"><strong></strong><span></span></span>
+    </div>
+    <div class="route-key" id="routeKey" hidden>
+      <div class="route-key-status" role="status">
+        <span id="routeMapDrawn" class="route-key-road" hidden></span>
+        <span id="routeMapMissing" class="route-key-pending" hidden></span>
+        <span id="routeMapLoading" hidden></span>
+      </div>
+      <button type="button" id="routeMapRetry" hidden>重试路线</button>
+    </div>
+    <div class="map-day-control" id="mapDayControl" hidden>
+      <select id="mapDaySelect" aria-label="选择地图上的行程日期"></select>
+    </div>
+    <section id="mapStop" class="map-stop" aria-label="所选行程地点" hidden></section>
+    <div class="map-ctl">
+      <div class="ctl-group">
+        <button id="ctlFit" data-ic="fit" title="查看全部"></button>
+      </div>
+      <div class="ctl-group">
+        <button id="ctlLayer" data-ic="layers" title="图层"></button>
+        <button id="ctlLocate" data-ic="locate" title="定位"></button>
+      </div>
+      <div class="ctl-group">
+        <button id="ctlIn" data-ic="zoomIn" title="放大"></button>
+        <button id="ctlOut" data-ic="zoomOut" title="缩小"></button>
+      </div>
+    </div>
+  </section>
+  <button class="map-fab" id="mapFab" hidden><span data-ic="fit"></span>地图</button>
+</main>
+
+<div class="pop" id="pop" hidden></div>
+<div class="modal-mask" id="modal" hidden><div class="modal" id="modalBox"></div></div>
+<dialog id="routeDialog" aria-labelledby="routeHeading">
+  <header class="route-heading">
+    <h2 id="routeHeading"></h2>
+    <button id="routeClose" class="ib" data-ic="close" aria-label="关闭路线详情"></button>
+  </header>
+  <label class="route-field" for="rmMode">出行方式</label>
+  <select id="rmMode">
+    <option value="walk">步行</option>
+    <option value="car">驾车</option>
+    <option value="transit">公共交通</option>
+  </select>
+  <div id="rmDepartureDateField" hidden>
+    <label class="route-field" for="rmDepartureDate">接驳日期</label>
+    <input type="date" id="rmDepartureDate">
+  </div>
+  <p id="rmNote" class="route-summary" role="status"></p>
+  <p id="rmPlanned" class="route-summary archive-planned" hidden></p>
+  <div class="route-actions">
+    <button id="rmRetry" type="button">重新查询</button>
+    <button id="rmUse" class="route-adopt" type="button" disabled>采用此方式</button>
+    <a id="rmNav" target="_blank" rel="noopener noreferrer">在高德打开 ↗</a>
+  </div>
+  <p id="routeMapStatus" class="route-map-status" hidden role="status"></p>
+  <div id="routeMapSlot" class="route-map-slot"></div>
+</dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script src="vendor/leaflet.min.js"></script>
+<script src="vendor/leaflet.markercluster.min.js"></script>
+<script src="data/trips.js"></script>
+<script src="data/road-reference.js"></script>
+<script src="config.js" onerror="void 0"></script>
+<script src="api.js?v=workbench-review"></script>
+<script src="personalized.js?v=planning-status"></script>
+<script src="transfer-review.js?v=timeline-weather"></script>
+<script src="day-facts.js?v=map-handoff"></script>
+<script src="bookings.js?v=legacy-history"></script>
+<script src="plan-differences.js?v=1"></script>
+<script src="itinerary-edit.js?v=manual-preview-warmup"></script>
+<script src="browser-history.js?v=1"></script>
+<script src="study-cases.js?v=1"></script>
+<script src="app.js?v=map-place-filters"></script>
+</body>
+</html>

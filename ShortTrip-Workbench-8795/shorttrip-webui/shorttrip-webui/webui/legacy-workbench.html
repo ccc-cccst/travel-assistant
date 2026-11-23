@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShortTrip 统一工作台</title>
+<style>
+  body{margin:12vh auto;padding:0 22px;max-width:560px;background:#f5f7fb;color:#172035;font:16px/1.6 system-ui,sans-serif}
+  main{padding:24px;background:#fff;border:1px solid #dae0eb;border-radius:14px}
+  h1{margin:0;font-size:24px}
+  a{display:inline-block;margin-top:8px;padding:8px 15px;border-radius:8px;color:#fff;background:#2457d6;text-decoration:none}
+</style>
+<main>
+  <h1>ShortTrip 统一工作台</h1>
+  <p>行程已可在 8795 打开。收藏、最近行程和预订标记可从统一版的「我的行程」迁入。</p>
+  <a id="continue" href="http://127.0.0.1:8795/">在统一版继续</a>
+</main>
+<script>
+  const source = new URLSearchParams(location.search);
+  const target = new URL("http://127.0.0.1:8795/");
+  for (const key of ["new","job","request","trip","candidate","revision","day","preview"]) {
+    if (source.has(key)) target.searchParams.set(key, source.get(key));
+  }
+  document.querySelector("#continue").href = target;
+</script>
+</html>
