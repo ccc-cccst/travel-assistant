@@ -1,0 +1,14 @@
+{
+  "executable": "runtime/llama-b11960-vulkan/llama-server.exe",
+  "model_path": "models/Qwen3.5-4B-SoftDSL-v2-Q8_0.gguf",
+  "host": "127.0.0.1",
+  "port": 18082,
+  "alias": "shorttrip-soft-dsl-v2",
+  "context": 4096,
+  "parallel": 1,
+  "backend": "Vulkan",
+  "thinking": false,
+  "training_checkpoint": 60,
+  "source_model": "Qwen/Qwen3.5-4B",
+  "model_sha256": "9bef2b4b7560e295955ba485f6f9371848858fbb9bed4cc87be0f86700d95565"
+}

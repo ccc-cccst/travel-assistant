@@ -1,0 +1,15 @@
+{
+  "shorttrip": {
+    "repository": "Paddington633/ShortTrip",
+    "commit": "ec558aea0a6aa1e534108ec54874e169dbeeaf61"
+  },
+  "five_city": {
+    "repository": "ruojimy/chinatravel-five-city",
+    "commit": "5e0ee8a2b8f43c6877d0e62f3ac829e90be647ff",
+    "profile": "xian_n16v2",
+    "inventory_sha256": "e6a5061a2a24abc316b4782ede8f63ce8a372cf717e20ccde7a99924997daae4",
+    "snapshot_sha256": "a36125283631e2a730025ad0739090c957e775eaafbdf49a78aae57a507645b1",
+    "catalog_sha256": "f686ebb254101ec201403859098fd10dd717ec3bb2216304dadefa278f47cd74",
+    "catalog_gzip_sha256": "0dcaf5864aea986bdfd04c49f0733c660719e27fee08cc7ec4752d6f19719ec0"
+  }
+}

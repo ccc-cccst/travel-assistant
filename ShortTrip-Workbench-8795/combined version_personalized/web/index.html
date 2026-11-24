@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShortTrip · 按你的想法出发</title>
+<style>
+:root{font-family:"Microsoft YaHei UI","PingFang SC",sans-serif;color:#183239;background:#f2f6f7;line-height:1.65;--accent:#14737c}*{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #dae5e7;padding:18px max(5vw,20px);display:flex;justify-content:space-between;align-items:center}header strong{font-size:23px;letter-spacing:-1px}header span{font-size:13px;color:#526f74}main{max-width:1120px;margin:40px auto;padding:0 22px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:38px}h1{font-size:34px;line-height:1.3;margin:0 0 12px;letter-spacing:-1px}p{color:#526f74}section{margin:26px 0}h2{font-size:18px;border-bottom:1px solid #d5e2e5;padding-bottom:10px}label{display:block;font-size:14px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:10px 12px;border:1px solid #bdcfd3;background:white;border-radius:6px;color:#183239;margin:5px 0 12px}textarea{min-height:95px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{display:flex;align-items:center;border:1px solid #bdcfd3;padding:7px 11px;border-radius:25px;background:white;cursor:pointer}.chip:has(input:checked){border-color:var(--accent);background:#def2f1}.chip input{width:auto;margin:0 6px 0 0;accent-color:var(--accent)}button{border:0;border-radius:6px;padding:12px 20px;background:var(--accent);color:white;font-weight:600;cursor:pointer}button:disabled{opacity:.45;cursor:default}.secondary{background:#e2eded;color:#214c54}aside{position:sticky;top:22px;align-self:start;background:#fff;padding:25px;border:1px solid #d5e2e5;border-radius:12px;min-width:0}aside h2{margin-top:0}.muted{color:#668087;font-size:13px}.issue{border-left:3px solid #bd8429;background:#fff8e9;padding:10px;margin:10px 0;font-size:14px}.success{border-left-color:#14737c;background:#e9f6f2}.stat{font-size:14px;padding:8px 0;border-bottom:1px solid #e3eced}.day{margin:20px 0}.day p{margin:6px 0;color:#183239;font-size:14px}details summary{cursor:pointer;color:#14737c}.status{white-space:pre-wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}@media(max-width:760px){main{display:block;margin:25px auto}h1{font-size:28px}aside{position:static;margin-top:26px;padding:20px}header span{max-width:150px;text-align:right}.row{gap:10px}}
+</style>
+<header><strong>ShortTrip</strong><a href="/tripspec">新版需求确认</a></header>
+<main><div><h1>这次，想怎么旅行？</h1><p>先定下基本安排，再挑喜欢的体验。不确定的可以留空。</p>
+<form id="form"><section><h2>旅行安排</h2><div class="row"><label>从哪里出发<select name="start_city" id="origin"></select></label><label>想去哪里<select name="target_city" id="destination"></select></label></div><div class="row"><label>旅行天数（含往返日）<input name="days" type="number" min="1" step="1" value="2" required></label><label>同行人数<input name="people_number" type="number" min="1" step="1" value="2" required></label></div><div class="row"><label>整团总预算上限（元，可选）<input name="budget" type="number" min="0" placeholder="不限"></label><label>城际交通<select name="mode"><option value="">不限</option><option value="train">只坐火车</option><option value="airplane">只坐飞机</option></select></label></div></section>
+<section><h2>喜欢的体验</h2><div class="chips" id="interests"></div><p class="muted">可以多选。当前城市缺少类别证据的选项会停用。</p><div class="row"><label>游玩节奏<select name="pace"><option value="balanced">不特别指定</option><option value="relaxed">舒缓，留些空闲</option><option value="full">充实，多安排些体验</option></select></label><label>移动偏好<select name="mobility"><option value="">不特别指定</option><option value="less_walking">减少接驳步行</option><option value="less_transit">减少市内接驳</option><option value="public_transport">优先公共交通</option></select></label></div><label>更看重什么<select name="focus"><option value="balanced">综合考虑</option><option value="cost">全程省一点</option><option value="lodging_cost">住宿省一点</option><option value="more_attractions">多去几个景点</option><option value="near_restaurants">去餐厅更方便</option><option value="food_share">更愿意把预算花在餐饮上</option></select></label><div class="row"><label>想尝试的菜系<select name="cuisine" id="cuisines"></select></label><label>住宿偏好<select name="hotel" id="hotels"></select></label></div></section>
+<details><summary>已有预约或明确限制</summary><div class="row"><label>预约地点<input name="appointment_name" placeholder="与数据中名称一致"></label><label>第几天<input name="appointment_day" type="number" min="1" step="1"></label></div><div class="row"><label>预约开始<input name="appointment_time" type="time"></label><label>预约时长（分钟）<input name="appointment_minutes" type="number" min="1" step="1"></label></div><label>每天接驳步行上限（分钟，可选）<input name="walk_limit" type="number" min="0"></label><p class="muted">接驳步行不含景区内部行走。预约地点与时段会继续由程序核验。</p></details>
+<section><label>还有什么想安排或避开的？<textarea name="nature_language" placeholder="例如：喜欢博物馆，第二天想晚一点出发。写下其他偏好和已经确定的安排。"></textarea></label></section><button type="submit" id="prepare">核对我的需求</button></form></div>
+<aside aria-live="polite"><h2>这次旅行的想法</h2><div id="review"><p>确认需求后，这里会显示已理解的偏好和需要补充的信息。</p></div><div class="actions"><button id="start" disabled>按这些需求规划</button><button id="download" class="secondary" hidden>保存需求</button></div><p class="muted">行程使用本地数据快照。价格、开放信息及余票需出行前核实。</p><div id="result"></div></aside></main>
+<script>
+let confirmed=null,raw=null,poll=null;const $=id=>document.getElementById(id);const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(path,body){const r=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});const data=await r.json();if(!r.ok){const e=Error(data.error||data.message||'请求失败');e.diagnostic=data.diagnostic;throw e}return data}
+function diagnosticHtml(d){
+ if(!d)return '';
+ const stages={transport_precheck:'交通检查',requirement_confirmation:'需求确认',input:'需求输入',model_setup:'模型配置',model_request:'模型请求',search:'行程搜索',independent_verification:'完整核验',data_setup:'数据加载',worker:'后台规划',result:'结果交付',lesson_loading:'运行前经验检查'};
+ const diagnosis=d.diagnosis_status==='confirmed'?'原因已由记录确认':'具体根因仍待核实';
+ return `<details class="diagnostic"><summary>查看错误详情（${safe(d.error_code)}）</summary><p>发生阶段：${safe(stages[d.stage]||d.stage)}。${diagnosis}。</p><p>记录编号：${safe(d.incident_id)}</p><p>已关联经验：${safe((d.lesson_ids||[]).join('、')||'待复盘')}</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${safe(JSON.stringify(d.evidence,null,2))}</pre></details>`;
+}
+function showError(e){$('result').textContent=e.message;$('result').insertAdjacentHTML('beforeend',diagnosticHtml(e.diagnostic))}
+function select(el,values){el.innerHTML='<option value="">不特别指定</option>'+Object.entries(values).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<option value="${safe(k)}">${safe(k)}（${n}个候选）</option>`).join('')}
+async function options(initial=false){try{const d=await api('/options?city='+encodeURIComponent(initial?'上海':$('destination').value));if(initial){for(const el of [$('origin'),$('destination')])el.innerHTML=d.cities.map(c=>`<option>${safe(c)}</option>`).join('');$('origin').value='南京';$('destination').value='上海'}$('interests').innerHTML=d.options.interests.map(i=>`<label class="chip"><input type="checkbox" value="${i.id}" ${i.count?'':'disabled'}>${safe(i.label)}</label>`).join('');select($('cuisines'),d.options.cuisines);select($('hotels'),d.options.hotel_features)}catch(e){$('review').textContent=e.message}}
+function input(){const f=new FormData($('form')),v={start_city:f.get('start_city'),target_city:f.get('target_city'),days:Number(f.get('days')),people_number:Number(f.get('people_number')),nature_language:f.get('nature_language'),profile:{interests:[...$('interests').querySelectorAll('input:checked')].map(i=>i.value),pace:f.get('pace'),focus:f.get('focus')}};if(f.get('budget'))v.budget=Number(f.get('budget'));if(f.get('mode'))v.intercity_modes=[f.get('mode')];if(f.get('mobility'))v.profile.mobility=f.get('mobility');if(f.get('cuisine'))v.profile.cuisines=[f.get('cuisine')];if(f.get('hotel'))v.profile.hotel_features=[f.get('hotel')];if(f.get('walk_limit')!=='')v.max_daily_access_walk_minutes=Number(f.get('walk_limit'));if(f.get('appointment_name'))v.appointments=[{name:f.get('appointment_name'),day:Number(f.get('appointment_day')),start_time:f.get('appointment_time'),duration_minutes:Number(f.get('appointment_minutes'))}];return v}
+$('form').addEventListener('input',()=>{$('start').disabled=true;confirmed=null});$('destination').addEventListener('change',()=>options());
+$('form').onsubmit=async e=>{e.preventDefault();$('prepare').disabled=true;try{raw=input();confirmed=await api('/prepare',raw);const r=confirmed;const labels={interest:'兴趣',pace:'节奏',mobility:'移动',focus:'重点',cuisine:'菜系',hotel_feature:'住宿'};const values={museum:'博物馆与艺术馆',history:'历史文化',nature:'自然风光',park:'公园园林',city:'城市街区',amusement:'游乐体验',relaxed:'舒缓',full:'充实',less_walking:'减少接驳步行',less_transit:'减少市内接驳',public_transport:'公共交通优先',cost:'全程省一点',lodging_cost:'住宿省一点',food_share:'重视餐饮',more_attractions:'多去景点',near_restaurants:'餐厅接驳方便'};$('review').innerHTML=`<div class="stat">${safe(r.trip.origin_city)} 往返 ${safe(r.trip.destination_city)}，${r.trip.days}天，${r.trip.people}人</div>`+r.preferences.map(p=>`<div class="stat">${safe(labels[p.dimension]||p.dimension)}：${safe(values[p.target]||p.target)}</div>`).join('')+r.issues.map(i=>`<div class="issue">${safe(i.message)}${i.source?'（'+safe(i.source)+'）':''}</div>`).join('')+r.unmapped_requirements.filter(u=>!r.issues.some(i=>i.source===u.source)).map(u=>`<div class="issue">${safe(u.source)}：${safe(u.reason)}</div>`).join('')+(r.ready?'<p class="muted">需求可以进入规划，偏好是否兑现以实际结果为准。</p>':'');$('start').disabled=!r.ready;$('download').hidden=false}catch(e){$('review').textContent=e.message}finally{$('prepare').disabled=false}};
+$('download').onclick=()=>{const u=URL.createObjectURL(new Blob([JSON.stringify(confirmed,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='shorttrip-request.json';a.click();URL.revokeObjectURL(u)};
+function renderPlanningStatus(s){
+ if(['planning','starting'].includes(s.state)){
+   $('result').textContent=s.state==='starting'?'正在准备规划。':`规划中，已完成${s.completed_model_calls||0}次模型请求。`;
+   return false;
+ }
+ if(s.state==='complete'&&s.selected_legal&&s.plan){
+   $('result').innerHTML='<div class="issue success">已通过当前硬约束核验</div>'+s.plan.itinerary.map(d=>`<div class="day"><strong>第${d.day}天</strong>${d.activities.map(a=>`<p>${safe(a.position||(a.start+' → '+a.end))} ${safe(a.start_time)}–${safe(a.end_time)}</p>`).join('')}</div>`).join('');
+ }else{
+   const messages={
+     transport_unavailable:'当前数据中未找到满足交通要求的往返安排。可以调整交通方式或目的地后重试。',
+     search_timeout:'规划时间已用尽，尚未找到通过核验的行程。可以重试或调整要求。',
+     search_exhausted:'已尝试当前搜索范围，尚未找到通过核验的行程。可以调整要求后重试。',
+     verification_failed:'行程候选未通过完整核验，请调整要求或重试。',
+     no_verified_result:'尚未找到通过核验的行程。请检查交通和其他要求后重试。',
+     worker_failed:'规划过程中出现运行错误，请重试或查看任务记录。',
+     needs_confirmation:'需求还有待确认项。',
+     missing_model_credentials:'模型服务尚未配置，请配置后端服务后重试。'
+   };
+   $('result').textContent=s.message||messages[s.state]||'规划未完成，请重试。';
+   $('result').insertAdjacentHTML('beforeend',diagnosticHtml(s.diagnostic));
+ }
+ $('start').disabled=false;
+ return true;
+}
+$('start').onclick=async()=>{
+ try{
+   const j=await api('/plan',raw);$('start').disabled=true;
+   $('result').textContent='规划已开始，正在读取候选并核验安排。';
+   clearInterval(poll);
+   poll=setInterval(async()=>{
+     try{if(renderPlanningStatus(await api('/job?id='+j.id)))clearInterval(poll)}
+     catch(e){clearInterval(poll);showError(e);$('start').disabled=false}
+   },2000);
+ }catch(e){showError(e)}
+};
+options(true);
+</script></html>

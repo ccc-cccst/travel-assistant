@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5ed">
+  <title>ShortTrip · 短途旅行规划</title>
+  <link rel="stylesheet" href="/workbench.css">
+  <script defer src="/workbench.js"></script>
+</head>
+<body>
+  <a class="skip" href="#trip">跳到需求表单</a>
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <a class="brand" href="/" aria-label="ShortTrip 首页"><span class="logomark" aria-hidden="true"></span>ShortTrip</a>
+      <button id="show-saved" class="button secondary saved-button" type="button">已保存行程</button>
+    </div>
+  </header>
+  <main class="shell">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title">一起安排<br>下一趟短途旅行。</h1>
+        <p>说说你想去哪、在意什么。先确认需求，再比较每套行程的费用、步行和游览时间。</p>
+      </div>
+      <figure class="hero-photo">
+        <img src="/shanghai.webp" alt="上海外滩对岸的浦东天际线示意图" width="1536" height="1024">
+        <figcaption>上海 · 外滩示意</figcaption>
+      </figure>
+    </section>
+
+    <div class="workspace">
+      <section class="panel input-panel" aria-labelledby="input-title">
+        <h2 id="input-title">你的出行需求</h2>
+        <form id="trip">
+          <fieldset id="fields" disabled>
+            <label for="text">你想怎么旅行？</label>
+            <textarea id="text" rows="3" placeholder="例如：从南京去上海玩两天，两人预算 3000 元，想坐火车和吃本帮菜。"></textarea>
+            <div class="form-grid">
+              <label>出发地<select id="from"><option value="">加载中…</option></select></label>
+              <label>目的地<select id="to"><option value="">加载中…</option></select></label>
+              <label>旅行天数<select id="days"><option value="">从描述识别</option><option value="1">1 天</option><option value="2">2 天</option><option value="3">3 天</option></select></label>
+              <label>同行人数<input id="people" type="number" min="1" max="20" placeholder="从描述识别"></label>
+              <label>总预算（元）<input id="budget" type="number" min="0" step="1" placeholder="选填"></label>
+              <label>旅行偏好<select id="preset"></select></label>
+            </div>
+            <button class="button primary" id="submit" type="submit">检查我的需求 <span aria-hidden="true">→</span></button>
+            <details>
+              <summary>想体验的内容</summary>
+              <div class="detail-body">
+                <fieldset class="choices"><legend>景点类型</legend><div id="interests" class="chips"></div></fieldset>
+                <label class="check"><input id="musttypes" type="checkbox"> 所选景点类型都要安排</label>
+                <fieldset class="choices"><legend>餐饮类型</legend><div id="food" class="chips"></div></fieldset>
+                <label class="check"><input id="mustfood" type="checkbox"> 所选餐饮类型都要安排</label>
+              </div>
+            </details>
+            <details>
+              <summary>住宿、往返与出行限制</summary>
+              <div class="form-grid detail-body">
+                <label>房间数<input id="rooms" type="number" min="1" placeholder="选填"></label>
+                <label>每间每晚房费上限<input id="hotelcap" type="number" min="0" placeholder="元"></label>
+                <label>每人每餐上限<input id="foodcap" type="number" min="0" placeholder="元"></label>
+                <label>返程最晚出发<input id="returncap" type="time"></label>
+                <label>城际交通<select id="mode"><option value="">火车或飞机</option><option value="train">只坐火车</option><option value="airplane">只坐飞机</option></select></label>
+                <label>每日最多步行<input id="walklimit" type="number" min="0" placeholder="分钟"></label>
+                <label>每日最多市内接驳<input id="transitlimit" type="number" min="0" placeholder="分钟"></label>
+                <label>每日最多景点<input id="stoplimit" type="number" min="0" placeholder="个"></label>
+              </div>
+            </details>
+            <details>
+              <summary>调整偏好权重</summary>
+              <div class="form-grid detail-body" id="weights"></div>
+            </details>
+          </fieldset>
+        </form>
+        <div id="form-status" role="status" class="form-status" hidden></div>
+      </section>
+
+      <div class="output-column" id="workbench">
+        <section class="panel status-panel" aria-labelledby="work-title">
+          <ol id="steps" class="steps" aria-label="规划步骤">
+            <li aria-current="step">需求</li><li>确认</li><li>规划</li><li>方案</li>
+          </ol>
+          <div class="state-heading">
+            <h2 id="work-title" tabindex="-1">确认需求后开始规划</h2>
+            <div id="stage-clock" hidden aria-hidden="true"></div>
+          </div>
+          <p id="announcement" class="status-text" role="status">检查需求后，你可以核对系统识别出的预算、偏好和必去地点。</p>
+          <div id="state-content"><button id="try-example" class="button secondary" type="button" disabled>试填南京到上海两日游</button></div>
+        </section>
+
+        <section id="results" aria-labelledby="results-title" hidden>
+          <section class="panel comparison" aria-labelledby="results-title">
+            <h2 id="results-title">比较方案</h2>
+            <p class="status-text" id="comparison-note"></p>
+            <div id="compare"></div>
+            <div id="preference-evidence" class="status-text" hidden></div>
+            <a class="check-shortcut" href="#checks-title">待核实 <span id="check-preview"></span> <span aria-hidden="true">↓</span></a>
+          </section>
+          <section class="panel itinerary" aria-labelledby="itinerary-title">
+            <div class="section-heading">
+              <h2 id="itinerary-title">逐日行程</h2>
+              <div id="day-tabs" class="day-tabs" role="group" aria-label="行程日期"></div>
+            </div>
+            <div class="trip-tools" id="trip-tools" hidden>
+              <div class="trip-tool-actions" id="trip-actions"></div>
+              <label class="trip-date">核价出发日期<input id="trip-date" type="date"></label>
+            </div>
+            <p id="quote-scope" class="status-text quote-scope" hidden></p>
+            <p id="edit-summary" class="status-text" role="status" hidden></p>
+            <div class="itinerary-body">
+              <ol id="timeline" class="timeline" aria-label="当天活动"></ol>
+              <div class="map-column">
+                <div class="map-heading">
+                  <h3 id="map-title">地点地图</h3>
+                  <div class="map-controls" role="group" aria-label="地图缩放">
+                    <button id="zoom-out" type="button" aria-label="缩小地图" title="缩小地图">−</button>
+                    <button id="zoom-in" type="button" aria-label="放大地图" title="放大地图">+</button>
+                  </div>
+                </div>
+                <div id="map" class="map" role="group" aria-labelledby="map-title">
+                  <canvas id="map-lines" aria-hidden="true"></canvas>
+                  <div class="north" aria-hidden="true">↑<br>北</div>
+                  <div id="map-scale" class="map-scale" hidden></div>
+                  <div id="map-markers"></div>
+                  <div id="map-empty" class="map-empty" hidden>当天没有可定位的地点</div>
+                </div>
+                <p id="map-caption" class="status-text">点选地图或时间线查看地点。连线依据坐标绘制，接驳详情见时间线。</p>
+                <p class="map-selection" id="map-selection" role="status"></p>
+              </div>
+            </div>
+          </section>
+          <section class="panel checks" aria-labelledby="checks-title">
+            <h2 id="checks-title" tabindex="-1">出发前还需核实</h2>
+            <div id="check-items"></div>
+          </section>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer class="shell footer">
+    <span>ShortTrip · 基于本地城市数据规划</span>
+  </footer>
+  <dialog id="edit-dialog" aria-labelledby="edit-title">
+    <form id="edit-form" class="dialog-form">
+      <div class="section-heading">
+        <h2 id="edit-title">编辑景点</h2>
+        <button id="close-edit" class="button secondary" type="button">关闭</button>
+      </div>
+      <p id="edit-context" class="status-text"></p>
+      <label class="dialog-field">景点 <input id="edit-place" list="edit-places" required autocomplete="off"></label>
+      <datalist id="edit-places"></datalist>
+      <div class="form-grid">
+        <label>游览开始<input id="edit-start" type="time" required></label>
+        <label>游览结束<input id="edit-end" type="time" required></label>
+      </div>
+      <div id="edit-feedback" class="notice" role="status" hidden></div>
+      <div class="buttons">
+        <button id="apply-edit" class="button primary" type="submit">应用改动</button>
+        <button id="lock-visit" class="button secondary" type="button">标记已确认预约</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="saved-dialog" aria-labelledby="saved-title">
+    <div class="dialog-form">
+      <div class="section-heading">
+        <h2 id="saved-title">已保存行程</h2>
+        <button id="close-saved" class="button secondary" type="button">关闭</button>
+      </div>
+      <p id="saved-status" class="status-text" role="status"></p>
+      <ul id="saved-list" class="saved-list"></ul>
+    </div>
+  </dialog>
+</body>
+</html>

@@ -1,0 +1,13 @@
+/.secrets/
+/ShortTrip/artifacts/
+/combined version_personalized/result/
+/shorttrip-webui/shorttrip-webui/webui/data/route_cache/
+/shorttrip-webui/shorttrip-webui/webui/data/store.json
+/shorttrip-webui/shorttrip-webui/webui/data/feedback.jsonl
+.env
+.venv/
+__pycache__/
+*.pyc
+*.log
+*.pid
+

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>迁移 ShortTrip 浏览器记录</title>
+<style>body{margin:8vh auto;padding:0 20px;max-width:560px;font:16px/1.55 system-ui,sans-serif;color:#172035}button{font:inherit;padding:9px 15px}</style>
+<h1>迁移 ShortTrip 浏览器记录</h1>
+<p>读取当前端口保存在此浏览器中的记录，在 8795 预览后再确认。</p>
+<button type="button" id="send">复制到 8795</button>
+<p id="status" role="status"></p>
+<script>
+const target = "http://127.0.0.1:8795";
+const status = document.querySelector("#status");
+const read = (key, fallback) => {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+};
+document.querySelector("#send").onclick = () => {
+  if (!window.opener || location.origin !== "http://127.0.0.1:8791") {
+    status.textContent = "请从 8795 的行程菜单打开迁移。";
+    return;
+  }
+  try {
+    const booking = Object.keys(localStorage).filter(key => key.startsWith("st.booking:") &&
+      localStorage.getItem(key) === "yes");
+    window.opener.postMessage({
+      type:"shorttrip-history", booking, favorites:read("st.favs", []),
+      jobs:read("st.ui.planningJobs", []),
+      drafts:read("st.created", []), edits:read("st.edits", {}),
+      chat:read("st.ui.chat", {})
+    }, target);
+    status.textContent = "已送往 8795 预览。请返回主窗口确认。";
+  } catch {
+    status.textContent = "无法读取本页的浏览器记录。";
+  }
+};
+</script>
+</html>

@@ -1,0 +1,129 @@
+{
+  "version": "requirements_v0.1",
+  "note": "本轮由助手依据原始文本做静态核对，不是真人偏好标注；运行时核验需求哈希。",
+  "cases": {
+    "easy_1": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "70ca8d4a5cfada858ad9dff78706fe57cbfe0b372ab9fa13b4ff4dfb84339d9b",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "easy_2": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "8e73a79230a94cc66fea71f03ed1f83236c2d6cc102119eea75c67c04c5a539e",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "easy_3": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "c4f7d3acfeb066cd52e54c4833279baeab5b51c1a51faca46ccc8f680835631c",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "easy_4": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "88c5ecd7352a3e0d46e3a9c558917632b59f70e2c2e8951cebd1bed6b8952dfc",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "easy_5": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "6d2bec85b9aedeef9a2edb5ba85639be7c317d40462e9b74262fd3689d4424e6",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "human_1": {
+      "reviewed": true,
+      "items": [
+        {
+          "id": "popular_attractions",
+          "kind": "soft",
+          "method": "semantic",
+          "description": "在必去武汉大学之外体现对热门景区的兴趣，结合三天时间判断",
+          "weight": 1,
+          "evidence": [
+            "希望可以参观武汉大学等热门景区"
+          ]
+        },
+        {
+          "id": "local_food",
+          "kind": "soft",
+          "method": "semantic",
+          "description": "尽可能体验当地美食，不以无节制增加餐次为满足",
+          "weight": 1,
+          "evidence": [
+            "尽可能多体验当地美食"
+          ]
+        }
+      ],
+      "query_sha256": "51becbcf2ab1da68be211529583df39c3146e55ec7f9f1fb914eb6f6d8b5dd45",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "human_2": {
+      "reviewed": true,
+      "items": [
+        {
+          "id": "history_museums",
+          "kind": "soft",
+          "method": "semantic",
+          "description": "体现对博物馆、历史人文景点的偏好",
+          "weight": 1,
+          "evidence": [
+            "多去博物馆等历史人文景点"
+          ]
+        },
+        {
+          "id": "local_food",
+          "kind": "soft",
+          "method": "semantic",
+          "description": "安排当地饮食体验",
+          "weight": 1,
+          "evidence": [
+            "要体验当地美食"
+          ]
+        }
+      ],
+      "query_sha256": "1979acac7b48f057b0819b8549535aec852c1a7d50214a1a31fa7ebe897d8cb4",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "human_3": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "54e127c5ada3e8f43bbf4b4264b094f71c44d7bd9a1f8e585a04c3f8be324bd5",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "human_4": {
+      "reviewed": true,
+      "items": [
+        {
+          "id": "history_and_nature",
+          "kind": "soft",
+          "method": "semantic",
+          "description": "兼顾历史景点和自然风光两类兴趣",
+          "weight": 1,
+          "evidence": [
+            "我们喜欢历史景点和自然风光"
+          ]
+        }
+      ],
+      "query_sha256": "e93e5ccd67d9a90108fc7c68b75e1bd728caef298ed98cd666261a23c41be0b4",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    },
+    "human_5": {
+      "reviewed": true,
+      "items": [],
+      "query_sha256": "a174f47613cd9d42485340c76159f712ae170b8ba65159ee438d54e70e0c21f8",
+      "review_method": "assistant_static_review",
+      "human_reviewed": false
+    }
+  }
+}

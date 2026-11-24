@@ -1,0 +1,42 @@
+{
+  "name": "ten_city_xian_v1",
+  "profile": "expanded11",
+  "cases": {
+    "easy": [
+      {"uid":"st14_e01","start_city":"成都","target_city":"西安","days":2,"people_number":2,"nature_language":"我和朋友从成都出发，坐火车往返西安，玩两天。帮我们排一个行程。","hard_logic":["intercity_transport == {'train'}"]},
+      {"uid":"st14_e02","start_city":"南京","target_city":"西安","days":2,"people_number":1,"nature_language":"我一个人从南京去西安玩两天，帮我安排火车往返，西安钟楼要去。","hard_logic":["intercity_transport == {'train'}","{'西安钟楼'} <= attraction_names"]},
+      {"uid":"st14_e03","start_city":"上海","target_city":"西安","days":3,"people_number":2,"nature_language":"我们两个人从上海去西安玩三天，住宿就开一间房，请安排包括返程的行程。","hard_logic":["rooms == 1"]},
+      {"uid":"st14_e04","start_city":"上海","target_city":"杭州","days":1,"people_number":1,"nature_language":"我一个人从上海去杭州，坐火车当天来回，帮我安排一日游。","hard_logic":["intercity_transport == {'train'}"]},
+      {"uid":"st14_e05","start_city":"南京","target_city":"苏州","days":2,"people_number":2,"nature_language":"我和同学从南京去苏州玩两天，坐火车往返，请帮我们排一下。","hard_logic":["intercity_transport == {'train'}"]},
+      {"uid":"st14_e06","start_city":"广州","target_city":"深圳","days":1,"people_number":2,"nature_language":"我们两个人想从广州去深圳玩一天，当天回广州，城际往返坐火车。","hard_logic":["intercity_transport == {'train'}"]},
+      {"uid":"st14_e07","start_city":"重庆","target_city":"成都","days":2,"people_number":2,"nature_language":"我和朋友从重庆去成都玩两天，晚上合住一间房。请给一份含返程的行程。","hard_logic":["rooms == 1"]},
+      {"uid":"st14_e08","start_city":"成都","target_city":"重庆","days":2,"people_number":1,"nature_language":"一个人从成都出发想在重庆玩两天，来回都坐火车，请帮我规划。","hard_logic":["intercity_transport == {'train'}"]},
+      {"uid":"st14_e09","start_city":"武汉","target_city":"南京","days":2,"people_number":1,"nature_language":"我从武汉出发，一个人坐火车去南京玩两天，帮我安排往返和游玩。","hard_logic":["intercity_transport == {'train'}"]},
+      {"uid":"st14_e10","start_city":"深圳","target_city":"广州","days":1,"people_number":2,"nature_language":"我和家人共两个人在深圳，想坐火车去广州玩，当天返回，帮忙安排。","hard_logic":["intercity_transport == {'train'}"]}
+    ],
+    "medium": [
+      {"uid":"st14_m01","start_city":"南京","target_city":"西安","days":2,"people_number":2,"nature_language":"两个人从南京去西安两天，火车往返。一定要去西安钟楼，也要安排一餐樊记腊汁肉夹馍。两人全程交通、住宿、餐饮和门票合计最多4200元。","hard_logic":["intercity_transport == {'train'}","{'西安钟楼'} <= attraction_names","{'樊记腊汁肉夹馍'} <= restaurant_names","cost <= 4200"]},
+      {"uid":"st14_m02","start_city":"成都","target_city":"西安","days":3,"people_number":2,"nature_language":"我们两人从成都去西安玩三天，城际都坐火车。住宿每晚一间，房费每晚最多350元。请把大兴善寺排进行程。","hard_logic":["intercity_transport == {'train'}","rooms == 1","hotel_price <= 350","{'大兴善寺'} <= attraction_names"]},
+      {"uid":"st14_m03","start_city":"上海","target_city":"西安","days":3,"people_number":1,"nature_language":"我一个人从上海去西安旅行三天，火车往返，必须参观大雁塔。包括返程在内，交通、住宿、餐饮和门票加起来最多3000元。","hard_logic":["intercity_transport == {'train'}","{'大雁塔'} <= attraction_names","cost <= 3000"]},
+      {"uid":"st14_m04","start_city":"杭州","target_city":"上海","days":2,"people_number":2,"nature_language":"两个人从杭州坐火车往返上海两天，晚上住一间房。交通、餐饮、住宿、门票总计不超过2400元。","hard_logic":["intercity_transport == {'train'}","rooms == 1","cost <= 2400"]},
+      {"uid":"st14_m05","start_city":"南京","target_city":"苏州","days":2,"people_number":2,"nature_language":"两人从南京出发去苏州两天，城际坐火车来回，末日返程火车最晚20:00发车，酒店每晚只开一间房。","hard_logic":["intercity_transport == {'train'}","return_start_time <= '20:00'","rooms == 1"]},
+      {"uid":"st14_m06","start_city":"北京","target_city":"南京","days":2,"people_number":1,"nature_language":"我一个人从北京去南京两天，往返坐火车，返程火车最晚19:00发车，全部行程开销最多2300元。","hard_logic":["intercity_transport == {'train'}","return_start_time <= '19:00'","cost <= 2300"]},
+      {"uid":"st14_m07","start_city":"广州","target_city":"深圳","days":2,"people_number":2,"nature_language":"我和朋友从广州坐火车往返深圳，玩两天。每晚一间房，房价上限为每间每晚420元。","hard_logic":["intercity_transport == {'train'}","rooms == 1","hotel_price <= 420"]},
+      {"uid":"st14_m08","start_city":"重庆","target_city":"成都","days":2,"people_number":2,"nature_language":"我们两个人从重庆去成都玩两天，城际往返坐火车。所有吃饭环节人均每餐最多100元，两人的总开销也不能超过2400元。","hard_logic":["intercity_transport == {'train'}","food_price <= 100","cost <= 2400"]},
+      {"uid":"st14_m09","start_city":"南京","target_city":"武汉","days":2,"people_number":2,"nature_language":"两个人从南京去武汉两日游，往返坐火车，末日返程最迟19:30发车。两人合计预算不超过3500元。","hard_logic":["intercity_transport == {'train'}","return_start_time <= '19:30'","cost <= 3500"]},
+      {"uid":"st14_m10","start_city":"南京","target_city":"北京","days":2,"people_number":2,"nature_language":"两人从南京去北京两天，火车往返，住一间房，房费每晚最多500元。","hard_logic":["intercity_transport == {'train'}","rooms == 1","hotel_price <= 500"]}
+    ],
+    "human": [
+      {"uid":"st14_h01","start_city":"成都","target_city":"西安","days":3,"people_number":2,"nature_language":"我和妈妈人在成都，能腾出三天去一趟西安。她想逛西安钟楼，也惦记着樊记腊汁肉夹馍，这两处一定要安排。来回都坐火车，晚上我俩住一间，住宿每间每晚别超过350元。最好少换乘。","hard_logic":["intercity_transport == {'train'}","{'西安钟楼'} <= attraction_names","{'樊记腊汁肉夹馍'} <= restaurant_names","rooms == 1","hotel_price <= 350"],"soft_preferences":["少换乘"]},
+      {"uid":"st14_h02","start_city":"南京","target_city":"西安","days":2,"people_number":2,"nature_language":"我和对象在南京，打算挤出两天去西安。来回都坐火车，住一间就好。大兴善寺是这次非去不可的地方。我们给两个人算的上限是3500元，往返车票、当地交通、住宿、饭钱和门票都得算进去。能留点余量就更好了。","hard_logic":["intercity_transport == {'train'}","rooms == 1","{'大兴善寺'} <= attraction_names","cost <= 3500"],"soft_preferences":["尽量留预算余量"]},
+      {"uid":"st14_h03","start_city":"上海","target_city":"西安","days":3,"people_number":2,"nature_language":"我俩从上海去西安，三天都算在这趟里，城际来回坐火车。大雁塔必须去一趟，还想让同行的人尝尝西安饭庄，这家也要排进去。回上海的火车最晚10:00发车。两个人一共最多花5400元，车费、吃住和门票都算进来。逛景点别排得太紧。","hard_logic":["intercity_transport == {'train'}","{'大雁塔'} <= attraction_names","{'西安饭庄'} <= restaurant_names","return_start_time <= '10:00'","cost <= 5400"],"soft_preferences":["游览节奏宽松"]},
+      {"uid":"st14_h04","start_city":"上海","target_city":"杭州","days":2,"people_number":2,"nature_language":"我和室友从上海去杭州换换心情，两天后还得回上海。想坐火车来回，晚上只订一间房，每间每晚最多400元。返程车最晚晚上八点开，免得回来太晚。能让吃饭的地方离景点近些就更好了。","hard_logic":["intercity_transport == {'train'}","rooms == 1","hotel_price <= 400","return_start_time <= '20:00'"],"soft_preferences":["餐厅靠近游览地点"]},
+      {"uid":"st14_h05","start_city":"苏州","target_city":"上海","days":2,"people_number":3,"nature_language":"我们仨现在在苏州，想去上海过两天，往返就坐火车。住的时候得开两间房，别把三个人往一间里塞。三个人一共留了3500元，往返、交通、吃住和门票都算在内。少绕路就行。","hard_logic":["intercity_transport == {'train'}","rooms == 2","cost <= 3500"],"soft_preferences":["少绕路"]},
+      {"uid":"st14_h06","start_city":"广州","target_city":"深圳","days":2,"people_number":2,"nature_language":"我和爸爸在广州，想去深圳待两天，来回都坐火车。一间房就够了，每间每晚最多380元。爸爸吃得简单，每餐每人不能超过90元。能少走一点路最好。","hard_logic":["intercity_transport == {'train'}","rooms == 1","hotel_price <= 380","food_price <= 90"],"soft_preferences":["少步行"]},
+      {"uid":"st14_h07","start_city":"重庆","target_city":"成都","days":3,"people_number":2,"nature_language":"我和朋友从重庆去成都散散心，一共三天，来回火车。两晚都只开一间房，每间每晚400元以内。最后一天要赶回重庆，返程车最迟18:30开。两人合计开销上限3200元，想尽量在一个片区慢慢逛。","hard_logic":["intercity_transport == {'train'}","rooms == 1","hotel_price <= 400","return_start_time <= '18:30'","cost <= 3200"],"soft_preferences":["同片区游览","游览节奏宽松"]},
+      {"uid":"st14_h08","start_city":"南京","target_city":"武汉","days":2,"people_number":1,"nature_language":"我人在南京，想一个人坐火车去武汉看看，给我安排两天，来回都坐火车。住宿每间每晚最多300元，每餐人均最多80元，加上往返票和其他费用，全程最多1800元。一天别安排太满。","hard_logic":["intercity_transport == {'train'}","hotel_price <= 300","food_price <= 80","cost <= 1800"],"soft_preferences":["游览节奏宽松"]},
+      {"uid":"st14_h09","start_city":"成都","target_city":"重庆","days":2,"people_number":2,"nature_language":"我和同事在成都，想请两天假去重庆。来回坐火车，我们要两间房各住一间，每间每晚最多350元。归程火车得在晚上八点前或正好八点发车。比较想把附近的地方放在一起走。","hard_logic":["intercity_transport == {'train'}","rooms == 2","hotel_price <= 350","return_start_time <= '20:00'"],"soft_preferences":["同片区游览"]},
+      {"uid":"st14_h10","start_city":"南京","target_city":"北京","days":3,"people_number":2,"nature_language":"我和家里人想从南京去北京玩三天，来回坐火车。吃饭不用讲排场，每人每餐上限100元。晚上两人一间房，每间每晚不超过600元，整趟两个人最多花4600元。想把时间留给逛景点，能少折腾交通更好。","hard_logic":["intercity_transport == {'train'}","food_price <= 100","rooms == 1","hotel_price <= 600","cost <= 4600"],"soft_preferences":["少换乘"]}
+    ]
+  }
+}
