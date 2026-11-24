@@ -7,8 +7,9 @@ import re
 
 from chinatravel.agent.nesy_agent.semantic_grounding import CITY_CUISINES, LOCAL_CUISINE, TAG_ALIASES
 from .open_requirements import NAMED_PLACES, place_modifiers
+from .reference_scope import reference_route
 from .tripspec import relative_start
-from .world_facts import KINDS, TICKET_OPTIONS, clock_minutes, day, numeric, positive_integer, strings
+from .world_facts import KINDS, TICKET_OPTIONS, clock_minutes, day, numeric, planning_place, positive_integer, strings
 
 
 PLACE_FIELDS = {'attraction': 'attraction', 'restaurant': 'restaurant',
@@ -141,7 +142,8 @@ def _ground_places(facts, city, start, days, requirements, modifiers=None):
                 resolved = _resolve_named_place(facts, city, text, PLACE_FIELDS[field], targets.get(item['id'], []))
             else:
                 resolved = facts.place_with_suggestions(city, text, PLACE_FIELDS[field])
-            entry = {'requirement_id': item['id'], **resolved}
+            entry = {'requirement_id': item['id'], **resolved,
+                     'records': [planning_place(p) for p in resolved['records']]}
             if field == 'appointment':
                 windows = resolved['records'][0]['opening']['windows_minutes'] if resolved['status'] == 'found' else []
                 end = begin + duration
@@ -174,7 +176,7 @@ def _ticket_queries(facts, origin, city, start_date, end_date, requirements, lim
         return {}
     end_points = {'outbound': (origin, city, start_date), 'return': (city, origin, end_date)}
     return {direction: [facts.intercity(start, finish, travel_date=travel_date, limit=limit,
-                                       restrictions=rules[direction])]
+                                       restrictions=rules[direction], include_reference_fares=True)]
             for direction, (start, finish, travel_date) in end_points.items()}
 
 
@@ -235,7 +237,8 @@ def _candidate_lists(facts, city, requirements, groundings, filters, limit):
         rows, usable = facts._catalog(city, kind)
         terms = {v.casefold() for item in positive if item['field'] == PREFERRED_TAGS[kind]
                  for v in _values(item) if isinstance(v, str) and v}
-        eligible = [p for row in rows if _candidate_allowed(p := facts._place(row), filters) and p['id'] not in excluded_ids]
+        eligible = [p for row in rows if _candidate_allowed(p := planning_place(facts._place(row)), filters)
+                    and p['id'] not in excluded_ids]
         matched_experiences = set()
         if kind == 'attraction':
             for item in requirements:
@@ -317,6 +320,8 @@ def snapshot_for_trip(facts, spec, limit=12):
     }
     if modifiers:
         result['place_modifiers'] = modifiers
+    if reference_route(origin, city):
+        result['verification_scope']['historical_city_reference'] = True
     if experiences:
         result['experience_matches'] = experiences
     encoded = json.dumps(result, ensure_ascii=False, sort_keys=True, allow_nan=False)

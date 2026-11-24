@@ -34,6 +34,7 @@ def configuration(installation):
             "CT_SANDBOX_RUNTIME_DIR": str(v20 / "runtime"),
             "CT_SANDBOX_ENGINE_ROOT": str(v20 / "engine"),
             "CT_XIAMEN_DISCOVERY_ONLY": "1",
+            "CT_XIAMEN_HISTORICAL_FARES": "1",
             "CT_FREE_ATTRACTION_ASSUMPTION": "0",
         }
     profile = installation / "sandbox_profiles" / SOURCE["profile"]
@@ -45,6 +46,7 @@ def configuration(installation):
         "CT_SANDBOX_PROFILE_ROOT": str(profile),
         "CT_CATALOG_PATH": str(catalog),
         "CT_DYNAMIC_MODE": "snapshot",
+        "CT_XIAMEN_HISTORICAL_FARES": "0",
         "CT_FLIGHT_REFERENCE_ROOT": str(installation / "observations/flight_20261116"),
     }
 

@@ -153,32 +153,37 @@ def integrated_job(args):
     output = fresh(args.out)
     stage = 'data_setup'
     try:
-        env = environment(args.data)
-        facts = WorldFacts.configured(args.data)
-        stage = 'route' if args.command == 'trip-route' else 'input'
-        if args.command == 'hotel-preview':
-            from .hotel_change import hotel_preview
-            stage='hotel_change'
-            status=hotel_preview(args.input,output,args.candidate_id,env,facts)
-        elif args.command == 'edit-preview':
+        if args.command == 'edit-preview':
+            from .edit_runtime import preview_environment
             from .itinerary_edit import edit_preview
             stage = 'itinerary_edit'
-            status = edit_preview(args.input, output, args.candidate_id, read(args.edit_file), env, facts)
-        elif args.command == 'trip-route':
-            status = run_trip_route(args.input, output, args.candidate_id, args.day, env, facts,
-                                    view_only=args.view_only)
+            snapshot = read(args.input / 'WORLD_FACTS.json')
+            with preview_environment(args.data) as (world_for, facts):
+                env = world_for(snapshot['origin'], snapshot['destination'])
+                status = edit_preview(args.input, output, args.candidate_id, read(args.edit_file), env, facts)
         else:
-            runner = run_trip_plan
-            recovery_options = {}
-            if args.recover:
-                from .trip_recovery import run_trip_with_recovery
-                runner = run_trip_with_recovery
-                recovery_options['try_budget_alternatives'] = args.try_budget_alternatives
-            deadline = time.perf_counter() + args.search_limit if args.search_limit is not None else None
-            status = runner(read(args.input), output, env, facts, model=args.with_model, search_deadline=deadline,
-                            seconds=args.trial_seconds, candidates=args.candidates, quality_seconds=args.quality_seconds,
-                            model_after_search=args.model_after_search,
-                            **recovery_options)
+            env = environment(args.data)
+            facts = WorldFacts.configured(args.data)
+            stage = 'route' if args.command == 'trip-route' else 'input'
+            if args.command == 'hotel-preview':
+                from .hotel_change import hotel_preview
+                stage = 'hotel_change'
+                status = hotel_preview(args.input, output, args.candidate_id, env, facts)
+            elif args.command == 'trip-route':
+                status = run_trip_route(args.input, output, args.candidate_id, args.day, env, facts,
+                                        view_only=args.view_only)
+            else:
+                runner = run_trip_plan
+                recovery_options = {}
+                if args.recover:
+                    from .trip_recovery import run_trip_with_recovery
+                    runner = run_trip_with_recovery
+                    recovery_options['try_budget_alternatives'] = args.try_budget_alternatives
+                deadline = time.perf_counter() + args.search_limit if args.search_limit is not None else None
+                status = runner(read(args.input), output, env, facts, model=args.with_model, search_deadline=deadline,
+                                seconds=args.trial_seconds, candidates=args.candidates, quality_seconds=args.quality_seconds,
+                                model_after_search=args.model_after_search,
+                                **recovery_options)
     except Exception as error:
         status = save(output / 'STATUS.json', {**describe_exception(error, stage), 'protocol': 'integrated_planning_v1'})
     print(json.dumps({'out': str(output), 'state': status['state']}, ensure_ascii=False))

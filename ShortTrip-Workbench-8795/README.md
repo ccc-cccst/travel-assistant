@@ -2,11 +2,14 @@
 
 ShortTrip 根据日期、预算、兴趣和预约生成行程，提供可比较的备选、逐日地图，以及核验后采用的手动和 AI 修改。
 
+Atlas 工作台可以按天查看路线和方向，在地图上点选替换景点、餐馆或酒店。厦门、西安也可以作为出发地或目的地。两城参考试排沿用 V20 快照，班次、票价和房型请在出发前复核。
+
 ## 下载与启动
 
-1. 从 [GitHub Releases](https://github.com/ccc-cccst/travel-assistant/releases/tag/workbench-8795-20261123) 下载 `ShortTrip-Workbench-8795-20261123.zip`，完整解压到可写目录。ZIP 包含源码、Windows 启动脚本、固定旅行快照和演示案例。
-2. 安装 Windows 64 位 Python 3.12，双击 `Start.cmd`。第一次运行会联网安装 Python 依赖。
-3. 打开 [新建规划](http://127.0.0.1:8795/?new=1) 或 [上海至杭州演示归档](http://127.0.0.1:8795/?trip=personalized&day=1)。也可以打开 [方案比较体验测试](http://127.0.0.1:8795/study.html)。
+1. 从 [11 月 23 日运行包](https://github.com/ccc-cccst/travel-assistant/releases/tag/workbench-8795-20261123) 下载 `ShortTrip-Workbench-8795-20261123.zip`，完整解压到新的可写目录，取得固定旅行快照和演示数据。
+2. 下载本分支的源码，将其中 `ShortTrip-Workbench-8795` 目录下的内容复制到刚解压的同名目录。合并文件夹并覆盖同名源码文件。对目录执行合并复制即可保留 `ShortTrip/artifacts/data` 和演示归档。
+3. 安装 Windows 64 位 Python 3.12，双击 `Start.cmd`。第一次运行会联网安装 Python 依赖。
+4. 打开 [Atlas 新建规划](http://127.0.0.1:8795/atlas.html?new=1) 或 [上海至杭州演示归档](http://127.0.0.1:8795/atlas.html?trip=personalized&day=1)。也可以打开 [方案比较体验测试](http://127.0.0.1:8795/study.html)。
 
 如果本机已经运行另一套 ShortTrip，可从 PowerShell 使用不同端口启动：
 
@@ -26,6 +29,6 @@ ShortTrip 根据日期、预算、兴趣和预约生成行程，提供可比较�
 | `ShortTrip/artifacts/data` | ZIP 内含固定快照、版本和数据收据 |
 | `ShortTrip/finetuning` | 专项训练代码，训练样本与模型权重另行准备 |
 
-[项目完整介绍](combined%20version_personalized/docs/2026-11-23-ShortTrip当前项目完整介绍.md)覆盖算法、数据、交互和历史实测。文中的历史实验引用指向原开发工作区，对完整历史记录的回放需要相应实验产物。ChinaTravel 和 Leaflet 组件的许可保留在交付目录。数据来源和固定版本见快照内的 `install.json` 与相关收据。
+[项目完整介绍](combined%20version_personalized/docs/2026-11-23-ShortTrip当前项目完整介绍.md)覆盖算法、数据、交互和历史实测。文中的历史实验引用指向原开发工作区，对完整历史记录的回放需要相应实验产物。ChinaTravel 和 Leaflet 组件的许可保留在交付目录。数据来源和固定版本见快照内的 `install.json`，以及 [five-city 数据说明](https://github.com/ruojimy/chinatravel-five-city/blob/main/NOTICE.md)。
 
 本地规划记录、编辑修订、反馈和缓存会在使用后写入解压目录。建议每位使用者在自己的目录运行。

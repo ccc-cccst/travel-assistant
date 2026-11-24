@@ -6,7 +6,7 @@ import sys
 from .trip_world import excluded_visit_ids, hotel_feature_options, hotel_feature_tag
 from .open_requirements import place_modifiers
 from .tripspec import relative_start
-from .world_facts import clock_minutes, day, numeric
+from .world_facts import clock_minutes, day, numeric, planning_place
 
 # The distribution bundles the constructor. Development checkouts share the baseline.
 SHARED_PLANNER = Path(__file__).resolve().parents[3] / 'ShortTrip'
@@ -253,7 +253,7 @@ def audit(plan, request, env, facts):
                 if reverse:
                     start, end = end, start
                 service = a.get('TrainID' if kind == 'train' else 'FlightID')
-                records = facts.intercity(start, end, service=service)['records']
+                records = facts.intercity(start, end, service=service, include_reference_fares=True)['records']
                 matched = [r for r in records if r['mode'] == kind and
                            (r['from'], r['to'], r['departure'], r['arrival'], r['fare']['value'])
                            == (a['start'], a['end'], a['start_time'], a['end_time'], a['price'])]
@@ -270,7 +270,7 @@ def audit(plan, request, env, facts):
             if found['status'] != 'found':
                 report['issues'].append({'code':'place_evidence','place':a['position'],'status':found['status']})
                 continue
-            p = found['records'][0]
+            p = planning_place(found['records'][0])
             if category != 'accommodation':
                 begin, end = clock_minutes(a['start_time']), clock_minutes(a['end_time'])
                 if not any(lo <= begin < end <= hi for lo,hi in p['opening']['windows_minutes']):

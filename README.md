@@ -2,7 +2,7 @@
 
 一个面向课程项目的短途旅行助手：从 ChinaTravel 复现出发，研究需求理解、行程体验评价、个性化和局部修复。
 
-当前 8795 统一工作台已接入个性化规划、分项比较、地图与行程编辑。查看 [工作台源码与启动说明](ShortTrip-Workbench-8795/README.md)，或从 [GitHub Releases](https://github.com/ccc-cccst/travel-assistant/releases/tag/workbench-8795-20261123) 下载包含固定旅行快照的运行包。
+当前 8795 工作台支持十二城规划、方案比较、Atlas 逐日地图和行程编辑。新版源码与旅行快照的本机安装步骤见[工作台启动说明](ShortTrip-Workbench-8795/README.md)。
 
 下方的安装步骤用于复现原始 ChinaTravel 基线。运行最新工作台请使用上方的工作台说明。
 

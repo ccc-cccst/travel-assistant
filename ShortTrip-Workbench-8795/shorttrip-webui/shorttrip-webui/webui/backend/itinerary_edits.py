@@ -351,15 +351,36 @@ class ItineraryEdits:
         if not isinstance(terms, str) or len(terms) > 120:
             raise ValueError("请输入有效的地点名称。")
         terms = terms.strip().casefold()
+        bounds = value.get("bounds")
+        if bounds is not None:
+            if (not isinstance(bounds, list) or len(bounds) != 4
+                    or any(type(v) not in (int, float) for v in bounds)
+                    or not (-90 <= bounds[0] < bounds[2] <= 90 and -180 <= bounds[1] < bounds[3] <= 180)):
+                raise ValueError("地图范围无效，请移动地图后重试。")
+            south, west, north, east = bounds
         options = []
+        original = index.places.get(origin.get("position"), {})
+        original_alias = original.get("hotel_name_en")
+        hotel_aliases = {(original_alias.casefold(), original["lat"], original["lon"])} if original_alias else set()
         for name, poi in index.places.items():
-            if poi["kind"] != kind or name in occupied or terms not in name.casefold():
+            if poi["kind"] != kind or name in occupied:
                 continue
-            km = haversine(focus, [poi["lat"], poi["lon"]]) if focus else None
+            alias = poi.get("hotel_name_en", "").casefold()
+            if terms not in name.casefold() and terms not in alias:
+                continue
+            lat, lon = poi["lat"], poi["lon"]
+            if bounds is not None and not (south <= lat <= north and west <= lon <= east):
+                continue
+            km = haversine(focus, [lat, lon]) if focus else None
             if radius is not None and km >= radius:
                 continue
+            if alias:
+                identity = (alias, lat, lon)
+                if identity in hotel_aliases:
+                    continue
+                hotel_aliases.add(identity)
             price_label = {"attraction": "门票", "hotel": "价格", "restaurant": "人均"}[kind]
-            options.append({"name": name, "km": km, "price": poi["info"].get(price_label)})
+            options.append({"name": name, "km": km, "price": poi["info"].get(price_label), "pos": [lat, lon]})
         return 200, sorted(options, key=lambda p: (p["km"] if p["km"] is not None else 0, p["name"]))[:12]
 
     def dispatch(self, method, path, query, body):

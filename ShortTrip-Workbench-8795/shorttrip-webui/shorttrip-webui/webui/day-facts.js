@@ -4,7 +4,7 @@ window.mountDayFacts = function (root, trip, activeDay, {itemId, initialDate, is
       <label>旅行第一天 <input type="date" class="facts-date"></label>
       <label>查看哪天 <select class="facts-day"></select></label>
     </div>
-    <h4>地点营业</h4><ul class="check-list facts-places"></ul>`;
+    <h4>地点营业</h4><ul class="facts-places"></ul>`;
   const date = root.querySelector(".facts-date"), selector = root.querySelector(".facts-day");
   const places = root.querySelector(".facts-places");
   const openingIsToday = info => info.date && info.todayDate === info.date;
@@ -35,41 +35,55 @@ window.mountDayFacts = function (root, trip, activeDay, {itemId, initialDate, is
   function officialAlert(info, item) {
     if (info.usualClosure) return "按常规时段当天闭馆，节假日及专场请核对官网。";
     if (info.regularHoursUncertain) return "该星期的开放时段请向馆方核对。";
+    if (info.serviceWindows?.length && item.start && item.end && !info.serviceWindows.some(
+      ([, start, end]) => start <= item.start && item.start < end && item.start <= item.end && item.end <= end
+    )) return "行程时段超出餐厅公布的供餐时间。";
     if (!info.hours) return "";
     if (item.start && (item.start < info.hours[0] || item.end > info.hours[1])) return "计划时段超出常规开放时间。";
+    if (!info.lastEntry) return "";
     if (item.start === info.lastEntry) return "原计划恰逢停止入场时刻，请核对预约及安检时间。";
     if (item.start > info.lastEntry) return "原计划晚于停止入场时刻。";
     return "";
   }
   function showPlace(out, item, info) {
+    const links = document.createElement("div");
+    links.className = "facts-source-links";
     if (info.official) {
       const official = info.official;
-      element(out, "p", [official.sourceLabel && official.sourceLabel !== "场馆官网" ? official.sourceLabel : official.name,
-        official.hours?.join("–"),
+      const windows = official.serviceWindows?.map(([label, start, end]) => label + " " + start + "–" + end).join("，");
+      element(out, "p", [official.sourceLabel !== "场馆官网" ? official.sourceLabel : official.name, windows || official.hours?.join("–"),
         official.lastEntry && ("停止入场 " + official.lastEntry), official.address].filter(Boolean).join(" · "));
-      const attention = info.date ? officialAlert(official,item) : "选择出游日期后可核对常规闭馆日。";
-      if (attention) element(out,"p",attention);
-      element(out, "p", official.notice);
-      source(out,(official.sourceLabel || "场馆官网") + "（" + official.checkedOn + " 核对）",official.source);
+      const attention = info.date ? officialAlert(official,item) : "选定出游日期后可核对当天的安排。";
+      if (attention) element(out,"p",attention).className = "facts-warning";
+      if (official.notice) element(out, "p", official.notice);
+      source(links,(official.sourceLabel || "场馆官网") + "（" + official.checkedOn + " 核对）",official.source);
     }
     if (info.notice) {
       element(out,"p",info.notice.text);
-      source(out,info.notice.sourceLabel,info.notice.source);
+      source(links,info.notice.sourceLabel,info.notice.source);
     }
     if (["matched","site_match","alias_match"].includes(info.status)) {
       if (info.status === "site_match") element(out,"p","匹配到景区，地图点与原行程相差约 " + info.coordinateGapMeters + " 米，入口需核对。");
       if (info.status === "alias_match") element(out,"p","附近高德门店为「" + info.name + "」，请核对是否为原行程的分店。");
-      if (info.address) element(out,"p","高德地点 · " + info.address);
-      if (info.today) element(out,"p",(info.status === "matched" && openingIsToday(info) ? "出游日当天" : "高德今日参考") + " · " + info.today);
-      if (info.week) element(out,"p","高德常规营业 · " + info.week);
-      if (!info.today && !info.week) element(out,"p","营业时间待核实。");
+      if (!info.official && (info.name || info.address)) element(out,"p",[info.name,info.address].filter(Boolean).join(" · "));
+      if (!info.notice?.checkDateSchedule && !info.official?.serviceWindows?.length) {
+        if (info.today && openingIsToday(info)) element(out,"p","高德当天参考 · " + info.today);
+        if (info.week) element(out,"p","高德营业参考 · " + info.week);
+        else if (!info.official && (!openingIsToday(info) || !info.today)) element(out,"p","出游日营业时间待核实。");
+      }
+    } else if (info.status === "hours_conflict") {
+      element(out,"p",info.address + "有两条高德记录，营业时间不同。请向门店确认。").className = "facts-warning";
+      const reports = element(out,"ul","");
+      reports.className = "facts-hours-options";
+      for (const report of info.hoursOptions) element(reports,"li",report.name + " · " + report.hours);
     } else if (info.status !== "schedule_required" && !(info.notice && info.status === "unmatched")) {
       element(out,"p",{
-        ambiguous:"找到多个相近地点，分店待核实。",
-        unmatched:"高德未找到可确认的同名地点，请按原地址核对。",
-      }[info.status] || "暂未取得高德营业信息，请稍后重试。");
+        ambiguous:"找到多个相近地点，请核对具体门店。",
+        unmatched:"高德地点未匹配，营业仍待核实。",
+      }[info.status] || "本次高德查询未完成，可重查。");
     }
-    source(out, "高德地点搜索", info.mapUrl);
+    source(links, "高德地点搜索", info.mapUrl);
+    if (links.childElementCount) out.append(links);
   }
 
   function renderPlaces(checkItem) {
@@ -82,12 +96,22 @@ window.mountDayFacts = function (root, trip, activeDay, {itemId, initialDate, is
     const remaining = day.items.filter(item => ["attraction","restaurant"].includes(item.kind));
     if (!remaining.length) element(places,"li","当天没有景点或餐馆。");
     for (const item of remaining) {
-      const row = element(places,"li",item.name + (item.hours ? " · 快照 " + item.hours : ""));
-      if (!item.pos) continue;
-      const btn = element(row,"button","查营业");
+      const row = element(places,"li","");
+      row.className = "facts-place";
+      const heading = element(row,"div","");
+      heading.className = "facts-place-head";
+      const description = element(heading,"div","");
+      element(description,"strong",item.name);
+      if (item.hours) element(description,"small","行程参考 " + item.hours);
+      if (!item.pos) {
+        element(description,"small","缺少地点坐标，需自行核实。");
+        continue;
+      }
+      const btn = element(heading,"button","查营业");
       btn.type = "button";
       btn.setAttribute("aria-label","查营业 " + item.name);
       const out = element(row,"div","");
+      out.className = "facts-result";
       out.setAttribute("aria-live","polite");
       btn.onclick = async () => {
         btn.disabled = true;
@@ -100,7 +124,7 @@ window.mountDayFacts = function (root, trip, activeDay, {itemId, initialDate, is
           out.replaceChildren();
           showPlace(out,item,result);
         } catch {
-          if (!ongoing.signal.aborted) out.textContent = "营业时间待核实，可重查。";
+          if (!ongoing.signal.aborted) out.textContent = "查询未完成，请重试。";
         } finally { btn.disabled = false; }
       };
       if (item.uid === checkItem) {

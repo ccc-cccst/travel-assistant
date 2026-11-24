@@ -68,6 +68,34 @@ def _grounded_activities(clause, activities, day):
     return matches
 
 
+def _check_meal_target(item, draft, text, payload, activities):
+    label = next((name for name, kind in MEAL_NAMES.items() if kind == item["kind"] and name in text), None)
+    if label is None and draft.get("action") != "meal_options":
+        return None
+    matches = [a for a in activities if a["kind"] == item["kind"]] if label else [
+        a for a in activities if a["kind"] in MEAL_NAMES.values()]
+    replacement = draft.get("place")
+    if isinstance(replacement, str):
+        replacement = replacement.strip()
+    if draft.get("action") == "replace" and isinstance(replacement, str) and replacement and replacement in text:
+        before, _, after = text.rpartition(replacement)
+        text = before + " " + after
+    named = [a for a in matches if a["name"] and a["name"] in text]
+    if named:
+        matches = named
+    elif payload.get("day") is not None:
+        matches = [a for a in matches if a["day"] == payload["day"]]
+    focus = next((a for a in matches if a["id"] == payload.get("focus")), None)
+    if focus is not None:
+        matches = [focus]
+    if len(matches) != 1:
+        return _clarify(f"请问要修改第几天的{label or '哪一餐'}？例如「第二天午餐」，也可以先点选餐馆。")
+    target, = matches
+    if target["id"] != item["id"]:
+        return _clarify(f"请确认是否要修改第 {target['day']} 天的「{target['name']}」。")
+    return None
+
+
 def _pace_scope(clauses):
     for clause in clauses:
         if PACE_WORDS.search(clause) and not re.search(r"不需要|不用|无需|不想", clause):
@@ -133,11 +161,13 @@ def interpret_edit(payload, facts, provider=request_deepseek_json):
     explicit_days = {_day_number(raw) for raw in DAY.findall(text)}
     if len(explicit_days) > 1:
         return _clarify("建议逐天处理。请先说要修改哪一天和哪一项活动。")
-    preferred = next(iter(explicit_days), payload.get("day"))
     days = {item["day"] for item in activities}
+    current = payload.get("day")
+    preferred = next(iter(explicit_days), current if type(current) is int and current in days else None)
     if explicit_days and preferred not in days:
         return _clarify(f"当前方案没有第 {preferred} 天。请选择行程内的日期。")
-    reply = provider(PROMPT, {"text": text, "day": preferred, "focus": payload.get("focus"),
+    payload = {**payload, "day": preferred, "focus": None if explicit_days else payload.get("focus")}
+    reply = provider(PROMPT, {"text": text, "day": preferred, "focus": payload["focus"],
                               "activities": [{k: item[k] for k in ("id", "day", "kind", "name", "start", "end", "locked")}
                                              for item in activities]}, max_tokens=750, timeout=14)
     if reply.error == "missing_model_credentials":
@@ -233,6 +263,9 @@ def _activity_action(draft, payload, text, activities, required_day, facts, *, c
         return _clarify(f"请指定前往{title}的步行、打车或地铁接驳。")
     if item["locked"] or kind is None:
         return _clarify(f"{title}是固定事项。可以尝试调整它前后的活动或接驳。")
+    if kind == "restaurant" and action in ("replace", "time", "meal_options"):
+        if issue := _check_meal_target(item, draft, text, payload, activities):
+            return issue
     if action == "remove_visit" and combined:
         if kind == "attraction" and item["name"] in text and re.search(r"取消|不去|删|移除|跳过|去掉", text):
             return _select(operation, f"试移除{title}。")

@@ -10,6 +10,8 @@ import math
 from pathlib import Path
 import re
 
+from .reference_scope import HISTORICAL_RAIL_FARE, reference_cities, reference_route
+
 
 KINDS = {
     'attraction': ('type', 'category_values', 'per_person'),
@@ -113,6 +115,20 @@ def price(data, access, unit):
             'source_status': access.get('price_source_status'), 'source_context': context,
             'usable_for_snapshot_budget': status == 'snapshot_reference' and unit is not None,
             'verified_for_date': False, 'inventory': 'unknown'}
+
+
+def planning_place(place):
+    """Apply the V20 reference lodging convention only during itinerary calculation."""
+    if (place['kind'] != 'accommodation' or place['city'] != '厦门' or place['city'] not in reference_cities()
+            or not place['planning_catalog'] or not place['routable_in_snapshot'] or not place['benchmark_bed_count']):
+        return place
+    fare = place['price']
+    source = fare.get('source_context') or {}
+    if (fare['status'] != 'historical_reference' or not fare['value']
+            or not source.get('historical_price_evidence_id')):
+        return place
+    return {**place, 'price': {**fare, 'unit': 'per_room_per_night',
+            'unit_basis': 'historical_room_price_proxy', 'usable_for_snapshot_budget': True}}
 
 
 class WorldFacts:
@@ -269,7 +285,7 @@ class WorldFacts:
         return self.sandbox.intercity_search(origin, destination, mode, travel_date=travel_date, seat_code=seat_code)
 
     def intercity(self, origin, destination, mode='any', travel_date=None, seat_code=None, limit=12,
-                  service=None, restrictions=()):
+                  service=None, restrictions=(), *, include_reference_fares=False):
         self._city(origin)
         self._city(destination)
         day(travel_date)
@@ -287,8 +303,25 @@ class WorldFacts:
             for rule in restrictions
         ):
             raise ValueError('班次筛选须包含有效的方式或车次类型')
+        if type(include_reference_fares) is not bool:
+            raise ValueError('是否使用历史参考票价须为布尔值')
         result = self._intercity(origin, destination, mode, travel_date, seat_code)
-        snapshot_rows = [item for item in result['records'] if service is None or item['record']['name'] == service]
+        use_reference = include_reference_fares and reference_route(origin, destination) and seat_code is None
+        transport = list(result['records'])
+        if use_reference and travel_date and mode != 'airplane':
+            def service_key(item):
+                data = item['record']['payload']['data']
+                return tuple(data.get(key) for key in ('TrainID', 'From', 'To', 'BeginTime', 'EndTime'))
+
+            scheduled = {service_key(item) for item in transport if item['mode'] == 'train'}
+            undated = self._intercity(origin, destination, 'train', None, None)
+            for item in undated['records']:
+                data = item['record']['payload']['data']
+                key = service_key(item)
+                if key not in scheduled and data.get('CostSource') == HISTORICAL_RAIL_FARE:
+                    transport.append(item)
+                    scheduled.add(key)
+        snapshot_rows = [item for item in transport if service is None or item['record']['name'] == service]
         before_restrictions = len(snapshot_rows)
         if restrictions:
             snapshot_rows = [item for item in snapshot_rows if all(
@@ -319,6 +352,7 @@ class WorldFacts:
             source['record_key'] = {k: data.get(k) for k in ('TrainID', 'FlightID', 'From', 'To', 'BeginTime') if k in data}
             freshness = payload.get('freshness_status', 'static_benchmark_snapshot')
             published = data.get('CostSource')
+            historical = use_reference and published == HISTORICAL_RAIL_FARE and numeric(data.get('Cost')) is not None
             observations = {k: v for k, v in data.items() if k.startswith(('Cost', 'Official', 'PublishedEvidence', 'Display'))
                             and k != 'Cost' and v is not None}
             observations.update({k: payload[k] for k in ('dynamic_train_evidence', 'dynamic_price_evidence') if k in payload})
@@ -329,8 +363,9 @@ class WorldFacts:
                             'arrival': data.get('EndTime'), 'source_duration_hours': duration_hours,
                             'duration_minutes': round(60 * duration_hours) if duration_hours is not None else None,
                             'fare': {'value': numeric(data.get('Cost')), 'unit': 'CNY/person', 'source_status': published,
-                                     'usable_for_snapshot_budget': bool(payload.get('static_budget_eligible'))
-                                     and freshness == 'static_benchmark_snapshot', 'verified_for_date': False},
+                                     'usable_for_snapshot_budget': historical or (
+                                         bool(payload.get('static_budget_eligible')) and freshness == 'static_benchmark_snapshot'),
+                                     'verified_for_date': False},
                             'status': freshness, 'availability': 'unknown', 'source': source,
                             'extra_evidence': observations})
         dated = [{**r, 'availability_at_observation': r.get('availability'), 'availability': 'unknown',

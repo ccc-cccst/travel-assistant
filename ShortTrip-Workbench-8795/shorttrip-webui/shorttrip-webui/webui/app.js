@@ -251,7 +251,8 @@
     if (!t) return;
     $("#reviewBtn").textContent = "出发前核对";
     if (t.archive) {
-      $("#reviewCount").textContent = "已按旅行快照核验 · 价格为参考";
+      $("#reviewCount").textContent = t.archive.referencePreview
+        ? "已按快照试排 · 班次与价格为参考" : "已按旅行快照核验 · 价格为参考";
       $("#compareBtn").textContent = "比较方案";
       $("#compareBtn").hidden = group().versions.length < 2 || Boolean(t.revision);
       return;
@@ -284,6 +285,7 @@
         <dl class="fact-meaning"><dt>已核验</dt><dd>时间、接驳和硬约束已按旅行快照检查。</dd>
           <dt>参考价</dt><dd>按行程人数和住宿安排估算。实际票价和房价需核对。</dd>
           <dt>待核实</dt><dd>请在出发前确认下方列出的事项。预订记录可在「预订管理」查看。</dd></dl>
+        ${t.archive.referencePreview ? "<p>这份行程可使用历史铁路班次和票价。厦门住宿可能按历史展示价估算每间每晚费用，实际房型、入住人数和报价请向酒店核对。</p>" : ""}
         ${pending.length ? `<details class="compare-metrics" ${itemId ? "" : "open"}><summary>仍需核实 · ${pending.length} 项</summary>
           <ul class="check-list">${pending.map(key => `<li>${esc(verificationLabels[key] || key)}</li>`).join("")}</ul></details>` : ""}
         <section id="dayFacts" class="day-facts" aria-label="地点营业"></section>
@@ -365,10 +367,10 @@
   $("#archiveOptions").onchange = event => {
     if (event.target.id === "archiveChoice" && event.target.value !== "") selectVersion(Number(event.target.value));
   };
-  function compareArchived(versions, current, study) {
-    const a = versions[current], other = current === 0 ? 1 : 0;
+  function compareArchived(versions, current, study, preferred, labelFor = archiveLabel) {
+    const a = versions[current], other = preferred ?? (current === 0 ? 1 : 0);
     const options = versions.map((v, i) => i === current ? "" :
-      `<option value="${i}">${esc(archiveLabel(v))}</option>`).join("");
+      `<option value="${i}">${esc(labelFor(v))}</option>`).join("");
     const tableFirst = study?.display === "table";
     openModal(`<h3>比较行程方案</h3><label class="compare-select">对比方案
       <select id="archiveCompare" ${study ? "disabled" : ""}>${options}</select></label>
@@ -417,15 +419,15 @@
       }
       const list = entries => entries.length ? `<ul>${entries.map(({line}) => `<li>${esc(line)}</li>`).join("")}</ul>` : "";
       const priorities = [...new Set(comparison.benefits.slice(0, 2).map(entry => entry.priority))];
-      if (!tableFirst) $("#archiveTakeaways").innerHTML = `<div class="decision-summary">
-        <p class="decision-context">${esc(archiveLabel(b))} 相比 ${esc(archiveLabel(a))}</p>
+      if (!tableFirst) $("#archiveTakeaways").innerHTML = (window.AtlasView?.comparisonHero(comparison, a, b) || "") + `<div class="decision-summary">
+        <p class="decision-context">${esc(labelFor(b))} 相比 ${esc(labelFor(a))}</p>
         ${comparison.benefits.length ? `<div><strong>优势</strong>${list(comparison.benefits)}</div>` : ""}
         ${comparison.tradeoffs.length ? `<div><strong>代价</strong>${list(comparison.tradeoffs)}</div>` : ""}
         ${priorities.length ? `<p>适合${esc(priorities.join("、"))}的旅行者。</p>` : ""}
         ${!comparison.benefits.length && !comparison.tradeoffs.length ? "<p>已记录的费用、接驳、游览和偏好指标没有差异。可以查看每天的具体安排。</p>" : ""}
         ${comparison.changes.some(row => row.change === null) ? '<p class="compare-note">部分指标资料不足，详情中标为待核实。</p>' : ""}</div>`;
       $("#archiveDelta").innerHTML = `<table class="version-table"><thead><tr><th scope="col">指标</th>
-        <th scope="col">${esc(archiveLabel(a))}</th><th scope="col">${esc(archiveLabel(b))}</th><th scope="col">差值</th></tr></thead>
+        <th scope="col">${esc(labelFor(a))}</th><th scope="col">${esc(labelFor(b))}</th><th scope="col">差值</th></tr></thead>
         <tbody>${rows.map(([label, x, y, delta]) => `<tr><th scope="row">${esc(label)}</th><td>${esc(x)}</td><td>${esc(y)}</td><td>${esc(delta)}</td></tr>`).join("")}</tbody></table>`;
       const changes = b.days.flatMap(day => {
         const previous = a.days.find(entry => entry.day === day.day);
@@ -451,6 +453,7 @@
           ${day.removed.length ? `<div>移出 ${esc(day.removed.join("、"))}</div>` : ""}</li>`).join("")}</ul>` : ""}
         ${pending.length ? `<details class="compare-note"><summary>出发前需核实</summary>
           <ul>${pending.map(key => `<li>${esc(verificationLabels[key] || key)}</li>`).join("")}</ul></details>` : ""}`;
+      window.AtlasView?.finishComparison();
     }
     $("#archiveDayDelta").onclick = event => {
       const button = event.target.closest("[data-compare-day]");
@@ -484,7 +487,13 @@
     $("#dateBtn").classList.toggle("set", !!ds);
     $("#dateBtn").hidden = !t;
     $("#dateBtn").disabled = Boolean(archive && t.startDate);
-    renderArchiveOptions(t);
+    if (window.AtlasView) {
+      AtlasView.render(t, group(), state.v, {
+        select: selectVersion,
+        compare: (reference, index, labelFor) => compareArchived(group().versions, reference, null, index, labelFor),
+        labelFor: archiveLabel,
+      });
+    } else renderArchiveOptions(t);
   }
 
   $("#title").addEventListener("click", () => {
@@ -753,8 +762,16 @@
     closePop();
     if (trigger instanceof HTMLElement) trigger.focus();
   });
-  function openModal(html) { $("#modalBox").innerHTML = html; $("#modal").hidden = false; }
-  function closeModal() { if (!comparisonStudy) $("#modal").hidden = true; }
+  function openModal(html) {
+    $("#modalBox").innerHTML = html; $("#modal").hidden = false;
+    window.AtlasView?.openModal();
+  }
+  function closeModal() {
+    if (!comparisonStudy) {
+      $("#modal").hidden = true;
+      window.AtlasView?.closeModal();
+    }
+  }
   $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal" || e.target.closest("[data-close]")) closeModal(); });
 
   // ======================= AI 助手 =======================
@@ -1105,8 +1122,10 @@
   }
   function renderChips() {
     const t = trip();
+    const atlasMap = Boolean(window.AtlasView && t?.archive);
+    window.AtlasView?.setPlanContext(state.sec, state.tab);
     $("#chipsBar").hidden = !t || state.tab !== "detail";
-    $("#mapDayControl").hidden = !t || !phoneLayout.matches;
+    $("#mapDayControl").hidden = !t || (!phoneLayout.matches && !atlasMap);
     if (!t) return;
     const chips = [["总览", "overview"], ...t.days.map((d) => [`第${d.day}天<small>${dayLabel(t, d.day)}</small>`, `day-${d.day}`])];
     if (!t.archive) chips.push(["待安排" + (t.pending.length ? ` ${t.pending.length}` : ""), "pending"], ["备注", "note"]);
@@ -1115,7 +1134,7 @@
     $("#dayChips").hidden = compact;
     const options = [["总览","overview"], ...t.days.map(day =>
       [`第 ${day.day} 天 ${dayLabel(t, day.day)}`.trim(), `day-${day.day}`])];
-    if (phoneLayout.matches) syncDayPicker($("#mapDaySelect"), options, state.sec);
+    if (atlasMap || phoneLayout.matches) syncDayPicker($("#mapDaySelect"), options, state.sec);
     if (compact) {
       syncDayPicker($("#dayJumpSelect"), options, state.sec);
       return;
@@ -1130,13 +1149,13 @@
   }
   $("#dayChips").addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) gotoSec(b.dataset.sec); });
   $("#dayJumpSelect").onchange = event => gotoSec(event.target.value);
-  $("#mapDaySelect").onchange = event => {
-    const sec = event.target.value;
+  $("#mapDaySelect").onchange = event => selectMapDay(event.target.value);
+  function selectMapDay(sec) {
     map.closePopup();
     if (state.tab !== "detail") $("#mainTabs [data-tab=detail]").click();
     gotoSec(sec, {restore: true});
     if (!trip()?.archive && state.filters.size) drawRecs();
-  };
+  }
   $("#addDay").addEventListener("click", () => { const t = trip(); if (!t) return; t.days.push({ day: t.days.length + 1, title: null, note: "", items: [] }); commit("已添加第" + t.days.length + "天"); gotoSec(`day-${t.days.length}`); });
 
   function gotoSec(sec, {restore = false} = {}) {
@@ -1206,7 +1225,7 @@
     return `<div class="it ${state.hl === x.uid ? "hl" : ""} ${state.sel.has(x.uid) ? "sel" : ""}" data-uid="${x.uid}" draggable="${!trip()?.archive}">
       <label class="chk"><input type="checkbox" data-sel="${x.uid}" ${state.sel.has(x.uid) ? "checked" : ""}></label>
       <span class="tl-ic ${k}">${ic(KIND[k].icon)}</span>
-      <div class="card">${thumb}<div class="body">
+      <div class="card">${window.AtlasView?.time(x) || ""}${thumb}<div class="body">
         <div class="nm">${n ? n + "." : ""}${esc(x.name)}</div>
         ${m1 ? `<div class="meta">${m1}</div>` : ""}${m2 ? `<div class="meta2">${m2}</div>` : ""}
         ${Object.hasOwn(fixedLabel, x.lock) ? `<span class="visit-lock">${fixedLabel[x.lock]}</span>` : ""}
@@ -1344,19 +1363,14 @@
     else if (!opts[cur] || opts[cur].unavailable) cur = "walk";
     return { cur, opts, straight, chosen: opts[cur] };
   }
+  function amapRoutePoint(item) {
+    return [item.pos[1], item.pos[0], (item.place || item.name).replaceAll(",", "，")].join(",");
+  }
   function navUrl(prev, x, c) {
     if (!prev || !prev.pos || !x.pos) return null;
     return "https://uri.amap.com/navigation?" + new URLSearchParams({
       from: amapRoutePoint(prev), to: amapRoutePoint(x), mode: CAT_UI[c][2], coordinate: "gaode", callnative: "0", src: "ShortTrip"
     });
-  }
-  function amapRoutePoint(item) {
-    return [item.pos[1], item.pos[0], (item.place || item.name).replaceAll(",", "，")].join(",");
-  }
-  function routeEmbedUrl(prev, x, c) {
-    return "https://www.amap.com/ssr/embed/dir?" + new URLSearchParams({
-      from: amapRoutePoint(prev), to: amapRoutePoint(x), type: CAT_UI[c][2], platform: "pc", src: "ShortTrip"
-    }).toString().replaceAll("%2C", ",");
   }
   function legHtml(prev, x) {
     if (trip()?.archive) {
@@ -1400,12 +1414,14 @@
   }
 
   function dayTitle(t, d) {
+    if (window.AtlasView) return AtlasView.dayTitle(t, d);
     if (d.title) return d.title;
     const names = d.items.filter((x) => x.kind !== "station" && x.kind !== "airport" && x.kind !== "hotel").map((x) => x.name);
     return `第${d.day}天 · ${names.length ? names.slice(0, 6).join("→") + (names.length > 6 ? "…" : "") : t.city}`;
   }
 
   async function renderPlan() {
+    window.AtlasView?.setPlanContext(state.sec, state.tab);
     renderReviewBar(trip());
     const body = $("#planBody"), t = trip();
     body.classList.toggle("list-view", state.view === "list");
@@ -1425,7 +1441,7 @@
     t.days.forEach((d) => {
       const parts = d.items.map((x) => (x.kind === "hotel" ? `<span class="stay">${ic("hotel")} 住在${esc(x.name)}</span>` : esc(x.name)));
       const cost = d.items.reduce((s, x) => s + (+x.cost || 0) + (+(x.leg && x.leg.cost) || 0), 0);
-      h += `<div class="ov-card day" data-goto="day-${d.day}"><h3>第${d.day}天 · ${esc(t.city)}</h3>${cost ? `<span class="dcost">约 ¥${Math.round(cost)}</span>` : ""}
+      h += `<div class="ov-card day" data-goto="day-${d.day}"><h3>${window.AtlasView ? esc(dayTitle(t, d)) : `第${d.day}天 · ${esc(t.city)}`}</h3>${cost ? `<span class="dcost">约 ¥${Math.round(cost)}</span>` : ""}
         <div class="chain">${parts.length ? parts.join(`<span class="arr">${ic("arrowDown").replace("<svg", '<svg style="transform:rotate(-90deg)"')}</span>`) : '<span class="ov-sub">还没有安排</span>'}</div></div>`;
     });
     if (!t.archive) {
@@ -1858,6 +1874,11 @@
   setBase(baseKey);
 
   const routeLayer = L.layerGroup().addTo(map);
+  const directionPane = map.createPane("route-directions");
+  directionPane.style.zIndex = "430";
+  directionPane.style.pointerEvents = "none";
+  const directionLayer = L.layerGroup().addTo(map);
+  const directedPaths = [];
   const pinLayer = L.layerGroup().addTo(map);
   const pins = {}; // uid -> marker
   const mapRouteMisses = new Set(), mapRoutesInFlight = new Set();
@@ -2006,9 +2027,43 @@
     queueMapLabels();
   }
 
+  function renderRouteDirections() {
+    directionLayer.clearLayers();
+    for (const {path, from, to} of directedPaths) {
+      const start = map.project(path[0]);
+      const end = map.project(path.at(-1));
+      const ordered = from && to &&
+        start.distanceTo(map.project(to)) + end.distanceTo(map.project(from)) <
+        start.distanceTo(map.project(from)) + end.distanceTo(map.project(to))
+        ? [...path].reverse() : path;
+      const points = ordered.map(point => map.project(point));
+      const distances = [0];
+      for (let i = 1; i < points.length; i++) {
+        distances.push(distances[i - 1] + points[i].distanceTo(points[i - 1]));
+      }
+      const length = distances.at(-1);
+      if (length < 56) continue;
+      const count = Math.min(3, Math.ceil(length / 145));
+      for (let i = 0; i < count; i++) {
+        const distance = length * (i + .36) / count;
+        const next = distances.findIndex(value => value > distance);
+        const vector = points[next].subtract(points[next - 1]);
+        const angle = Math.atan2(vector.y, vector.x) * 180 / Math.PI;
+        const fraction = (distance - distances[next - 1]) / (distances[next] - distances[next - 1]);
+        const position = map.unproject(points[next - 1].add(vector.multiplyBy(fraction)));
+        L.marker(position, {pane:"route-directions", keyboard:false, interactive:false,
+          icon:L.divIcon({className:"", iconSize:[16,16],
+            html:`<span class="atlas-route-direction" aria-hidden="true" style="--direction:${angle}deg">${ic("chevronRight")}</span>`})
+        }).addTo(directionLayer);
+      }
+    }
+  }
+
   function drawRoute(fit = true, geometryOnly = false) {
     selectWeatherDay(trip()?.archive ? activeDay() : 0);
     routeLayer.clearLayers();
+    directionLayer.clearLayers();
+    directedPaths.length = 0;
     mapRouteRequests = new Map();
     if (!geometryOnly) {
       closeMapStop();
@@ -2017,6 +2072,8 @@
     }
     const t = trip(); $("#routeKey").hidden = !t; if (!t) return;
     const ad = activeDay();
+    const atlasMap = Boolean(window.AtlasView && t.archive);
+    const atlasOverview = atlasMap && !ad;
     const bounds = [];
     let drawn = 0, loading = 0;
     const missing = [];
@@ -2028,8 +2085,8 @@
     }
     t.days.forEach((d, di) => {
       const active = !ad || ad === d.day;
-      if (!active && t.archive && phoneLayout.matches) return;
-      const c = ad ? PIN_COLOR : dayColor(d.day);
+      if (!active && t.archive && (phoneLayout.matches || atlasMap)) return;
+      const c = ad && !atlasMap ? PIN_COLOR : dayColor(d.day);
       const allPts = [];
       let prev = null;
       d.items.forEach((x, xi) => {
@@ -2050,18 +2107,24 @@
           const endpoints = s.from && s.to ? `${s.from} → ${s.to}` : "";
           const reason = geometry.reason || "暂未取得线路图";
           if (t.archive) track(geometry.path, geometry.request, endpoints ? `${endpoints}：${reason}` : reason);
+          if (atlasOverview && !known) return;
           if (!known && (!a || !b)) return;
           if (!known && segs.length > 1 && !s.fromPos && !s.toPos) return;
           const path = known ? geometry.path : [a, b];
           if (known) {
             if (!labelPath || s.mode === x.leg?.mode) labelPath = path;
-            L.polyline(path, { color: "#fff", weight: active ? 9 : 5, opacity: active ? 0.95 : 0.4, interactive: false }).addTo(routeLayer);
+            if (atlasMap && ad === d.day) directedPaths.push({path,from:a,to:b});
+            L.polyline(path, { color: "#fff", weight: atlasOverview ? 5 : active ? 9 : 5,
+              opacity: atlasOverview ? .65 : active ? .95 : .4, interactive: false }).addTo(routeLayer);
           }
-          const line = L.polyline(path, { color: known ? c : "#566987", weight: active ? (known ? 5 : 3) : 3,
-            opacity: active ? (known ? 0.96 : 0.72) : 0.28, dashArray: known ? null : "5 8", lineCap: "round",
+          const line = L.polyline(path, { color: known ? c : "#566987", weight: atlasOverview ? 3 : active ? (known ? 5 : 3) : 3,
+            opacity: atlasOverview ? .75 : active ? (known ? 0.96 : 0.72) : 0.28, dashArray: known ? null : "5 8", lineCap: "round",
             interactive: Boolean(active && ch), bubblingMouseEvents: false,
             className: known ? "road-reference-line" : "unverified-route-line" }).addTo(routeLayer);
-          if (active && ch) {
+          if (atlasOverview) {
+            line.bindTooltip(`查看第 ${d.day} 天路线`, {sticky:true});
+            line.on("click", () => selectMapDay(`day-${d.day}`));
+          } else if (active && ch) {
             const source = {amap: "高德线路参考", osrm: "OpenStreetMap 道路参考", osm_reference: "OpenStreetMap 道路参考", plan: "行程路线"};
             const caption = known ? source[geometry.source] || "道路参考" : reason;
             line.bindTooltip(esc(endpoints ? `${endpoints} · ${caption}` : caption), {sticky: true});
@@ -2085,11 +2148,17 @@
       });
       // 总览：每天中间一个“第N天”标签
       if (!ad && allPts.length) {
-        const mid = allPts[Math.floor(allPts.length / 2)];
-        L.marker(mid, { interactive: false, icon: L.divIcon({ className: "", iconSize: null, html: `<div class="daypill" style="--c:${c}">第${d.day}天</div>` }) }).addTo(routeLayer);
+        const mid = (atlasOverview && d.items.find(x => x.kind === "attraction" && x.pos)?.pos) ||
+          allPts[Math.floor(allPts.length / 2)];
+        const marker = L.marker(mid, {interactive:atlasOverview, keyboard:atlasOverview,
+          title:atlasOverview ? `查看第 ${d.day} 天路线` : "",
+          icon:L.divIcon({className:atlasOverview ? "atlas-day-marker" : "",iconSize:null,html:
+            `${atlasOverview ? `<span class="atlas-day-leader" style="--c:${c}" aria-hidden="true"></span>` : ""}<div class="daypill" style="--c:${c}">第${d.day}天${atlasOverview ? ic("chevronRight") : ""}</div>`})
+        }).addTo(routeLayer);
+        if (atlasOverview) marker.on("click", () => selectMapDay(`day-${d.day}`));
       }
       if (active && t.archive) bounds.push(...allPts);
-      if (geometryOnly) return;
+      if (geometryOnly || atlasOverview) return;
       d.items.forEach((x, i) => {
         if (!x.pos) return;
         const label = active && (Boolean(ad) || (di === 0 && i === 0) || state.hl === x.uid);
@@ -2121,6 +2190,7 @@
         maxZoom:15, animate:!phoneLayout.matches
       });
     }
+    renderRouteDirections();
     queueMapLabels();
     loadMapRoutes(t.city);
     if (t.archive) return;
@@ -2146,24 +2216,49 @@
   function queueMapLabels() {
     cancelAnimationFrame(mapLabelFrame);
     mapLabelFrame = requestAnimationFrame(() => {
-      const labels = $$("#map .plabel, #map .dur, #map .daypill");
-      const priority = label => label.closest(".pin.hl") ? 0 : label.matches(".plabel") ? 1 : 2;
+      const labels = $$("#map .plabel, #map .dur, #map .daypill, #map .atlas-route-direction");
+      const priority = label => label.closest(".pin.hl") ? 0 : label.matches(".plabel") ? 1 : label.matches(".atlas-route-direction") ? 3 : 2;
       const frame = $("#map").getBoundingClientRect();
       const intersect = (a, b) => a.left < b.right + 4 && a.right + 4 > b.left && a.top < b.bottom + 4 && a.bottom + 4 > b.top;
       const occupied = $$("#map .pin:not(.dim) .b").map(pin => pin.getBoundingClientRect());
       const overlays = $$(".map-top, #mapWeather, #routeKey, .map-ctl, #mapDayControl, #mapStop, #mapFab")
         .filter(node => getComputedStyle(node).visibility === "visible")
         .map(node => node.getBoundingClientRect()).filter(box => box.width && box.height);
+      const fits = box => box.left >= frame.left && box.right <= frame.right &&
+        box.top >= frame.top && box.bottom <= frame.bottom &&
+        !occupied.some(other => intersect(box, other)) && !overlays.some(other => intersect(box, other));
+      const nearby = [[0,0],[0,-34],[0,34],[-42,-27],[42,-27],[-42,27],[42,27],[0,-62],[0,62]];
       for (const label of labels.sort((a, b) => priority(a) - priority(b))) {
-        const box = label.getBoundingClientRect();
-        const visible = box.left >= frame.left && box.right <= frame.right &&
-          box.top >= frame.top && box.bottom <= frame.bottom &&
-          !occupied.some(other => intersect(box, other)) && !overlays.some(other => intersect(box, other));
-        label.classList.toggle("map-label-occluded", !visible);
-        if (visible) occupied.push(box);
+        const dayMarker = label.closest(".atlas-day-marker");
+        if (dayMarker) {
+          const anchor = dayMarker.getBoundingClientRect();
+          const halfWidth = label.offsetWidth / 2, halfHeight = label.offsetHeight / 2;
+          let placed = false;
+          for (const [x, y] of nearby) {
+            const box = {
+              left: anchor.left + x - halfWidth, right: anchor.left + x + halfWidth,
+              top: anchor.top + y - halfHeight, bottom: anchor.top + y + halfHeight,
+            };
+            if (!fits(box)) continue;
+            dayMarker.style.setProperty("--day-x", `${x}px`);
+            dayMarker.style.setProperty("--day-y", `${y}px`);
+            dayMarker.style.setProperty("--leader-length", `${Math.hypot(x, y)}px`);
+            dayMarker.style.setProperty("--leader-angle", `${Math.atan2(y, x)}rad`);
+            occupied.push(box);
+            placed = true;
+            break;
+          }
+          dayMarker.classList.toggle("map-label-occluded", !placed);
+        } else {
+          const box = label.getBoundingClientRect();
+          const visible = fits(box);
+          label.classList.toggle("map-label-occluded", !visible);
+          if (visible) occupied.push(box);
+        }
       }
     });
   }
+  map.on("zoomend resize", renderRouteDirections);
   map.on("moveend zoomend resize", queueMapLabels);
 
   // 中栏 ⇄ 地图 联动
@@ -2232,17 +2327,17 @@
     el.querySelectorAll("[data-pp-fav]").forEach((b) => b.addEventListener("click", () => toggleFav(b.dataset.ppFav, b)));
   });
 
-  // 高德负责路线地图，工作台负责当前接驳和可保存的核对数据。
+  // 路线预览使用高德底图和路径规划返回的坐标。
   const routeDialog = $("#routeDialog");
   const routeSelect = $("#rmMode");
   const routeSlot = $("#routeMapSlot");
   const routeMapStatus = $("#routeMapStatus");
-  let routeRequest, mapWait;
+  let routeRequest, routePreview;
 
   function closeRouteDialog() {
     routeRequest?.abort();
-    clearTimeout(mapWait);
-    routeSlot.replaceChildren();
+    routePreview?.remove();
+    routePreview = null;
     routeDialog.close();
     if (trip()?.archive) drawRoute(false);
   }
@@ -2290,26 +2385,55 @@
     if (!routeDialog.open) routeDialog.showModal();
     const sourceClock = new Intl.DateTimeFormat("zh-CN", {timeZone:"Asia/Shanghai", hour:"2-digit", minute:"2-digit", second:"2-digit"});
 
-    function updateMap(selected, refresh) {
-      const url = routeEmbedUrl(from, visit, selected);
-      if (!refresh && routeSlot.firstChild?.getAttribute("src") === url) return;
-      clearTimeout(mapWait);
-      const frame = document.createElement("iframe");
-      frame.title = "高德" + CAT_UI[selected][1] + "路线";
-      frame.referrerPolicy = "strict-origin-when-cross-origin";
-      frame.allowFullscreen = true;
-      routeMapStatus.textContent = "正在加载高德地图…";
+    routePreview?.remove();
+    routePreview = L.map(routeSlot, {scrollWheelZoom:false, maxZoom:18});
+    const preview = routePreview;
+    const tiles = amapStreetTiles({detectRetina:true, maxNativeZoom:17}).addTo(preview);
+    const pathLayer = L.featureGroup().addTo(preview);
+    const endpoints = L.latLngBounds([from.pos, visit.pos]);
+    [from, visit].forEach((point, index) => {
+      const label = index === 0 ? "起点" : "终点";
+      L.marker(point.pos, {
+        title:label + "：" + point.name,
+        icon:L.divIcon({
+          className:"route-endpoint " + (index === 0 ? "route-start" : "route-end"),
+          html:index === 0 ? "起" : "终",
+          iconSize:[30,30],
+        }),
+      }).bindTooltip(esc(label + "：" + point.name)).addTo(preview);
+    });
+    let mapMessage = "";
+    let tilesUnavailable = false;
+    function showMapStatus() {
       routeMapStatus.hidden = false;
-      frame.addEventListener("load", () => {
-        if (routeSlot.firstChild !== frame) return;
-        clearTimeout(mapWait);
-        routeMapStatus.textContent = "地图如未显示所选路线，可点「在高德打开」。";
-      }, {once:true});
-      mapWait = setTimeout(() => {
-        if (routeSlot.firstChild === frame) routeMapStatus.textContent = "高德地图加载较慢，可点「在高德打开」。";
-      }, 8000);
-      frame.src = url;
-      routeSlot.replaceChildren(frame);
+      routeMapStatus.textContent = tilesUnavailable
+        ? "高德底图加载失败。可重新查询，或点「在高德打开」。"
+        : mapMessage;
+    }
+    tiles.on("load", () => {
+      tilesUnavailable = !routeSlot.querySelector(".leaflet-tile-loaded");
+      showMapStatus();
+    });
+    function drawPreview(selected, result, loading) {
+      const usable = result?.source === "amap" && !result.unavailable;
+      const segments = usable ? (result.segments || []).filter(segment => hasPath(segment.path)) : [];
+      if (usable && !segments.length && hasPath(result.path)) segments.push({type:selected,path:result.path});
+      pathLayer.clearLayers();
+      for (const segment of segments) {
+        const walk = segment.type === "walk";
+        L.polyline(segment.path, {
+          color:walk ? "#247e69" : "#2461da", weight:5, opacity:.92,
+          dashArray:walk ? "4 7" : null,
+        }).addTo(pathLayer);
+      }
+      const bounds = L.latLngBounds(endpoints.getSouthWest(), endpoints.getNorthEast());
+      if (segments.length) bounds.extend(pathLayer.getBounds());
+      preview.fitBounds(bounds, {padding:[42,42], maxZoom:16, animate:false});
+      const label = CAT_UI[selected][1];
+      mapMessage = segments.length
+        ? "高德" + label + "路线" + (selected === "transit" && segments.some(segment => segment.type === "walk") ? " · 绿色虚线为步行" : "")
+        : loading ? "正在加载高德" + label + "路线…" : "暂未取得高德" + label + "路线图。可点「在高德打开」核对。";
+      showMapStatus();
     }
 
     function showSummary(selected, result, fallback, loading = false, departure) {
@@ -2367,11 +2491,12 @@
       dateField.hidden = !dateApplicable;
       const departure = dateApplicable && dateInput.value ? dateInput.value + "T" + startClock : undefined;
       nav.href = navUrl(from, visit, selected);
-      updateMap(selected, refresh);
       const cached = cachedLeg(selected, from, visit);
       const reference = roadReference(selected, from.pos, visit.pos);
       const fallback = isRoute(cached) ? routeToOpt(cached, selected) : reference || null;
       const lookup = API.canLookupRoute;
+      drawPreview(selected, !departure && !refresh ? cached : null, lookup);
+      if (refresh && tilesUnavailable) tiles.redraw();
       showSummary(selected, null, fallback, lookup, departure);
       if (!lookup) return;
       let result;
@@ -2384,6 +2509,7 @@
       if (isRoute(result) && !result.requestedDeparture) {
         routeCache.set(rkey(selected, from.pos, visit.pos), result);
       }
+      drawPreview(selected, result, false);
       showSummary(selected, result, fallback, false, departure);
     }
 
@@ -2677,6 +2803,8 @@
   }
   const editor = createItineraryEditor({
     open: openModal, close: closeModal,
+    streetTiles: amapStreetTiles,
+    restaurantCatalog: () => API.getPois({city:trip().city, kind:"restaurant", snapshot:trip().archive.snapshot}),
     active: panel => !$("#modal").hidden && $("#modalBox").contains(panel),
     current: () => group()?.canEdit ? {job:group().jobId, candidate:trip().id,
       original:baseTrip().id, parent:trip().revision?.id || null} : null,
@@ -2702,7 +2830,7 @@
     fillIcons();
     $("#sampleMode").hidden = API.mode !== "mock";
     renderFilters();
-    if (innerWidth <= 980) setAi(false);
+    if (window.AtlasView || innerWidth <= 980) setAi(false);
     if (phoneLayout.matches) setMap(false);
     try { state.favs = (await API.getFavorites()) || []; } catch { state.favs = []; }
     try { state.groups = await API.listTrips(); } catch (e) { toast("加载行程失败：" + e.message, 4000); state.groups = []; }

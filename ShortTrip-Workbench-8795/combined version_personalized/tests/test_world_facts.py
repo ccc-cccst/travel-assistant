@@ -4,7 +4,8 @@ import unittest
 
 from chinatravel.personalization.cli import environment, read, ROOT
 from chinatravel.personalization.tripspec import interpret
-from chinatravel.personalization.world_facts import WorldFacts, opening
+from chinatravel.personalization.city_scope import planning_cities
+from chinatravel.personalization.world_facts import WorldFacts, opening, planning_place
 
 
 V20 = ROOT.parent / 'ShortTrip/artifacts/data/6de12f4'
@@ -46,6 +47,27 @@ class WorldFactsTests(unittest.TestCase):
         self.assertEqual(hotel['price']['status'], 'historical_reference')
         self.assertIsNone(hotel['price']['unit'])
         self.assertFalse(hotel['price']['usable_for_snapshot_budget'])
+        trial = planning_place(hotel)
+        self.assertEqual(trial['price']['unit_basis'], 'historical_room_price_proxy')
+        self.assertEqual(trial['price']['source_context'], hotel['price']['source_context'])
+        self.assertFalse(trial['price']['verified_for_date'])
+        self.assertTrue(trial['price']['usable_for_snapshot_budget'])
+
+    def test_v20_opens_both_cities_with_historical_rail_fares_for_planning_only(self):
+        self.assertTrue({'厦门', '西安'}.issubset(planning_cities(self.facts.sandbox.cities)))
+        date = '2026-11-28'
+        for origin, target in (('上海', '厦门'), ('北京', '西安')):
+            for start, end in ((origin, target), (target, origin)):
+                with self.subTest(start=start, end=end):
+                    actual = self.facts.intercity(start, end, 'train', travel_date=date, limit=100)
+                    preview = self.facts.intercity(start, end, 'train', travel_date=date, limit=100,
+                                                   include_reference_fares=True)
+                    reference = [row for row in preview['records'] if row['status'] == 'historical_conditional_benchmark']
+                    self.assertTrue(reference)
+                    self.assertFalse(any(row['status'] == 'historical_conditional_benchmark' for row in actual['records']))
+                    self.assertTrue(all(row['fare']['usable_for_snapshot_budget']
+                                        and not row['fare']['verified_for_date']
+                                        and row['availability'] == 'unknown' for row in reference))
 
     def test_segmented_hours_keep_the_gap(self):
         record = self.facts.place('厦门', '香遇巴厘(新中林店)', 'restaurant')['records'][0]

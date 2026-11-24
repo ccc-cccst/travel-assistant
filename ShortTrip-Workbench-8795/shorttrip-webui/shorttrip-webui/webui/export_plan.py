@@ -80,8 +80,11 @@ class CityIndex:
             lat, lon = float(row["lat"]), float(row["lon"])
         except (KeyError, TypeError, ValueError):
             return
-        self.places.setdefault(name, {"lat": lat, "lon": lon, "kind": kind,
-                                      "info": {k: v for k, v in info.items() if v not in (None, "", "nan")}})
+        place = {"lat": lat, "lon": lon, "kind": kind,
+                 "info": {k: v for k, v in info.items() if v not in (None, "", "nan")}}
+        if kind == "hotel" and row.get("hotelname_en"):
+            place["hotel_name_en"] = row["hotelname_en"]
+        self.places.setdefault(name, place)
 
     def find(self, name: str | None) -> dict | None:
         if not name:

@@ -38,11 +38,13 @@
 
 ## 十二城 V20 数据
 
-首版行程规划开放北京、上海、南京、苏州、杭州、深圳、成都、武汉、广州、重庆。西安和厦门暂缓开放，出发地和目的地均适用。V20 数据仍按十二城安装，`facts` 与历史复查可读取两城。开放状态由 `chinatravel/personalization/city_scope.py` 统一管理。
+8795 使用 V20 时可选择十二座城市作为出发地或目的地。西安和厦门按快照试排，沿用行程核验、地点查询和地图流程。旧十一城快照保留原有规划范围。
 
 新启动的网页和 `personalize.py` 默认读取 `../ShortTrip/artifacts/data/6de12f4`，对应 [V20 固定提交](https://github.com/ruojimy/chinatravel-five-city/commit/6de12f41ce0e523afade7162807a5df3ea82b2bc)。本地校验公开收据和 625 个快照文件。十一城 `5e0ee8a` 仍用于兼容证据和历史复现，可显式传入 `--data ../ShortTrip/artifacts/data/5e0ee8a` 选择旧快照。
 
-西安和厦门的新版景点类别、菜系、地理位置及有值的参考价格和营业信息进入本地目录。按日期收集的交通引用走单独的只读查询。以北京至厦门 2026-11-20 的航班为例：
+西安和厦门的景点、餐饮、住宿、POI 和交通沿用 [five-city 的 V20 快照](https://github.com/ruojimy/chinatravel-five-city/commit/6de12f41ce0e523afade7162807a5df3ea82b2bc)。往返铁路允许使用快照里有来源的历史票价。厦门具备位置绑定和床数记录的历史住宿展示价按间夜试算，保留历史价证据和原计价口径。定日查询与出行日库存仍以原来口径核查，页面会提示需复核的班次、费用和房型。[上游数据使用说明](https://github.com/ruojimy/chinatravel-five-city/blob/main/NOTICE.md)
+
+按日期收集的交通记录走只读查询。以北京至厦门 2026-11-20 的航班为例：
 
 ```powershell
 @'

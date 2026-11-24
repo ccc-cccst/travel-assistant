@@ -16,6 +16,7 @@ from .cli import ROOT,DATA,environment,read,save
 from .catalog import PreferenceCatalog
 from .city_scope import frozen_city_outcome, planning_cities, prepare_for_planning
 from .lessons import record_failure,describe_exception
+from .reference_scope import reference_cities
 
 
 def main():
@@ -144,7 +145,8 @@ def main():
             elif url.path=='/options':
                 city=query.get('city',['上海'])[0]
                 providers = model_options()
-                self.reply(200,{'cities':cities,'options':catalog.get(city),
+                self.reply(200,{'cities':cities,'reference_cities':[c for c in cities if c in reference_cities()],
+                                'options':catalog.get(city),
                                 'model_ready':providers['deepseek'], 'model_providers':providers})
             elif url.path=='/tripspec/places':
                 city = query.get('city', [''])[0]

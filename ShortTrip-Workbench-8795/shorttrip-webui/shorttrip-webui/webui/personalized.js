@@ -30,6 +30,7 @@
   window.createPersonalizedFlow = function (intake, banner, {publish, remember, clearPlan, showPlaces, focusPlace}) {
     let spec, job, submission, controller, active = false;
     let shown = "", lastPreview = null;
+    let referenceCities = new Set();
     let resumePreview;
     let picked, placeRows = [], placeQuery = "", placeRequest, choicePending = false, choicesOpen = false;
 
@@ -71,6 +72,7 @@
     const input = (name, label, type, value, extra = "") => `<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
     const options = (values, selected, placeholder) => `<option value="">${placeholder}</option>` +
       values.map(value => `<option ${value === selected ? "selected" : ""}>${esc(value)}</option>`).join("");
+    const referenceNote = "厦门和西安按旅行快照试排。历史班次、票价和住宿估价请在出发前核对。";
 
     async function renderForm(seed = {}) {
       showPlaces(null);
@@ -86,6 +88,7 @@
         return;
       }
       if (signal.aborted) return;
+      referenceCities = new Set(config.reference_cities || []);
       const f = seed.form || {}, profile = f.profile || {}, appointment = f.appointments?.[0] || {};
       const providers = config.model_providers || {deepseek:config.model_ready, qwen:false, program:true};
       const selected = providers[seed.model_provider] ? seed.model_provider :
@@ -115,6 +118,7 @@
             ${input("appointment_duration","预约时长（分钟）","number",appointment.duration_minutes,'min="1"')}
           </div>
         </details>
+        <p data-reference-cities hidden>${referenceNote}</p>
         <p class="planning-error" role="status"></p><button class="pri" type="submit">核对需求</button>
       </form>`;
       const fields = intake.querySelector("#planningRequest").elements;
@@ -137,8 +141,15 @@
           fields[name].disabled = !choices?.length;
         }
       }
+      function syncReferenceNote() {
+        intake.querySelector("[data-reference-cities]").hidden =
+          ![fields.start_city.value, fields.target_city.value].some(city => referenceCities.has(city));
+      }
+      fields.start_city.onchange = syncReferenceNote;
+      syncReferenceNote();
       fillCatalog(f.target_city ? config.options : null, profile);
       fields.target_city.onchange = async () => {
+        syncReferenceNote();
         const city = fields.target_city.value;
         fillCatalog(null);
         if (!city) return;
@@ -191,6 +202,8 @@
         <div class="planning-place-results"></div></details>` : "";
       intake.innerHTML = `<h2>确认旅行需求</h2>${modelLabels[spec.model_provider] ? `<p>${modelLabels[spec.model_provider]}</p>` : ""}${spec.raw_text ? `<blockquote>${esc(spec.raw_text)}</blockquote>` : ""}
         <div class="planning-spec">${fields.join("")}</div>
+        ${spec.items.some(item => ["origin_city", "destination_city"].includes(item.field) &&
+            referenceCities.has(item.value)) ? `<p>${referenceNote}</p>` : ""}
         ${chosen.length ? `<ul class="planning-picked">${chosen.map(item => `<li><span>${esc(item.label)} · ${esc(item.value)}</span>
           <button type="button" data-place-clear="${esc(item.source.place_id)}" aria-label="撤销 ${esc(item.value)}">撤销</button></li>`).join("")}</ul>` : ""}
         ${picker}

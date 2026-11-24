@@ -4,6 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 from chinatravel.environment.airports import airport_matches, airport_display
 from chinatravel.environment.language import city_names, normalize_lang, relative_database_path
+from chinatravel.personalization.reference_scope import HISTORICAL_RAIL_FARE, reference_route
 
 
 def time2float(time_str):
@@ -108,10 +109,20 @@ class IntercityTransport:
         if intercity_type == "train":
 
             filtered_trains = self.train_df_dict[(start_city, end_city)].copy()
+            use_reference = self.lang == "zh" and reference_route(start_city, end_city) and not travel_date and not seat_code
+            if not use_reference and "BenchmarkHistoricalScheduleOnly" in filtered_trains:
+                filtered_trains = filtered_trains.loc[~filtered_trains["BenchmarkHistoricalScheduleOnly"].eq(True)].copy()
             for key in ("Cost", "Duration"):
                 if key in filtered_trains:
                     numeric = pd.to_numeric(filtered_trains[key], errors="coerce")
                     filtered_trains[key] = numeric.where(numeric >= 0)
+            if use_reference and "BenchmarkHistoricalCost" in filtered_trains:
+                historical = pd.to_numeric(filtered_trains["BenchmarkHistoricalCost"], errors="coerce")
+                eligible = filtered_trains["Cost"].isna() & historical.ge(0) & historical.lt(math.inf)
+                filtered_trains.loc[eligible, "Cost"] = historical.loc[eligible]
+                filtered_trains.loc[eligible, "CostSource"] = HISTORICAL_RAIL_FARE
+                filtered_trains.loc[eligible, "CostDate"] = filtered_trains.loc[eligible, "BenchmarkFareDate"]
+                filtered_trains.loc[eligible, "CostSeatCode"] = filtered_trains.loc[eligible, "BenchmarkFareSeat"]
             if travel_date and seat_code:
                 from chinatravel.environment.official_fare_runtime import apply
                 filtered_trains = apply(filtered_trains, travel_date=travel_date, seat_code=seat_code,

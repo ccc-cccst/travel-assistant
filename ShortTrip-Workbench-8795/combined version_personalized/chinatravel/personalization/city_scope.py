@@ -1,16 +1,18 @@
-"""Product planning scope, independent of the installed city catalog."""
+"""Keep the extended planning scope tied to its verified snapshot."""
 
-FROZEN_CITIES = frozenset(('西安', '厦门'))
+from .reference_scope import REFERENCE_CITIES, reference_cities
 
 
 def planning_cities(catalog_cities):
-    return [city for city in catalog_cities if city not in FROZEN_CITIES]
+    blocked = REFERENCE_CITIES - reference_cities()
+    return [city for city in catalog_cities if city not in blocked]
 
 
 def frozen_city_outcome(request):
     trip = request['trip']
+    blocked = REFERENCE_CITIES - reference_cities()
     affected = {field: trip[field] for field in ('origin_city', 'destination_city')
-                if trip.get(field) in FROZEN_CITIES}
+                if trip.get(field) in blocked}
     if not affected:
         return None
     cities = '、'.join(dict.fromkeys(affected.values()))

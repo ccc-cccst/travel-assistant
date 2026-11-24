@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 from amap_route import CITYCODE, RouteError, haversine
 
-AMAP_POI = "https://lbs.amap.com/api/webservice/guide/api-advanced/newpoisearch"
+AMAP_POI = "https://lbs.amap.com/api/webservice/guide/api/newpoisearch"
 AMAP_WEATHER = "https://lbs.amap.com/api/webservice/guide/api/weatherinfo"
 CHINA = timezone(timedelta(hours=8))
 WEATHER_CODES = {
@@ -18,6 +18,14 @@ POI_TYPES = {"restaurant":("05",), "hotel":("10",), "attraction":("08","11","14"
 
 # Operator-published normal hours, assigned to a named site. Special closures and reservations are checked on the linked page.
 OFFICIAL = {
+    ("上海","上海浦东丽晶酒店·尚席中餐厅·粤菜"): {
+        "name":"上海浦东丽晶酒店 · 尚席", "archivePoint":[31.2341704,121.5100492],
+        "address":"世纪大道210号，丽晶酒店2楼",
+        "source":"https://www.ihg.com/regent/hotels/cn/zh/shanghai/shasd/hoteldetail/dining",
+        "sourceLabel":"酒店官网", "closed":[],
+        "serviceWindows":[["午餐","11:30","14:30"],["晚餐","17:30","21:00"]],
+        "notice":"如需确认当日营业或订位，可拨打 021-20361310。", "checkedOn":"2026-11-24",
+    },
     ("上海","上海博物馆"): {
         "name":"上海博物馆（人民广场馆）",
         "archivePoint":[31.234149,121.482358], "address":"人民大道201号，从武胜路南门入馆",
@@ -52,6 +60,16 @@ OFFICIAL = {
     },
 }
 PLACE_NOTICES = {
+    ("上海","attraction","上海迪士尼度假区"): {
+        "text":"上海迪士尼乐园的开闭园时间随日期变化。请用所选游玩日期在官方 App 核对。",
+        "source":"https://www.shanghaidisneyresort.com/gonglve/post/practical/in-park-services/",
+        "sourceLabel":"迪士尼官方运营说明", "checkDateSchedule":True,
+    },
+    ("上海","attraction","上海中心大厦"): {
+        "text":"行程对应上海中心大厦 118 层的上海之巅观光厅。请按预约时段及现场公告入场。",
+        "source":"https://www.shanghaitower.com/shagnhai.html",
+        "sourceLabel":"上海之巅观光厅官网",
+    },
     ("重庆","attraction","重庆两江游"): {
         "text":"请按船票核对具体班次和登船码头。洪崖洞、朝天门均有登船点，快照时段仅供参考。",
         "source":"https://www.cq.gov.cn/ywdt/jrcq/202604/t20260405_15591125.html",
@@ -66,8 +84,16 @@ PLACE_NOTICES = {
 RESTAURANT_ALIASES = {
     ("重庆","仪表厂火锅(解放碑店)"):("仪表厂火锅(总店)",),
 }
+# Confirmed branch names include an address fragment to prevent matches to other branches.
+RESTAURANT_BRANCHES = {
+    ("上海","上海浦东丽晶酒店·尚席中餐厅·粤菜"): (("尚席",), "世纪大道210号"),
+    ("上海","Kathleen's Waitan 凯圣琳K外滩西餐厅(外滩店)"): (
+        ("Kathleen's Waitan", "凯圣琳江景西餐厅(外滩店)"), "外马路453号"),
+}
 # Large POIs explicitly identified by city and venue name. The map point may be a different entrance.
 LARGE_SITES = {
+    ("上海","上海迪士尼度假区"):("上海迪士尼乐园",),
+    ("上海","上海中心大厦"):("上海之巅观光厅",),
     ("上海","外滩"):("外滩",),
     ("上海","上海博物馆"):("上海博物馆(人民广场馆)",),
     ("杭州","西湖风景名胜区"):("杭州西湖风景名胜区",),
@@ -101,10 +127,10 @@ def official_for(city, name, on=None, pos=None):
     weekday = on.weekday() if on else None
     extended = weekday in row.get("extendedDays", ())
     uncertain = weekday in row.get("exceptionDays", ())
-    hours = row["extendedHours"] if extended else row["hours"]
-    entry = row["extendedLastEntry"] if extended else row["lastEntry"]
+    hours = row["extendedHours"] if extended else row.get("hours")
+    entry = row["extendedLastEntry"] if extended else row.get("lastEntry")
     return {**{k:row[k] for k in ("name","source","notice","checkedOn")}, "address":row.get("address"),
-            "sourceLabel":row.get("sourceLabel","场馆官网"),
+            "sourceLabel":row.get("sourceLabel","场馆官网"), "serviceWindows":row.get("serviceWindows"),
             "hours":None if uncertain else hours, "lastEntry":None if uncertain else entry,
             "usualClosure":weekday in row["closed"], "regularHoursUncertain":uncertain}
 
@@ -130,19 +156,26 @@ class DayFacts:
         if name in {"上海博物馆","重庆动物园"} and not official:
             site = ()
         alternatives = RESTAURANT_ALIASES.get((city,name), ()) if kind == "restaurant" else ()
+        branch = RESTAURANT_BRANCHES.get((city,name)) if kind == "restaurant" else None
         exact = {normalize(n) for n in (site or (name,))}
+        branch_names = {normalize(n) for n in branch[0]} if branch else set()
         aliases = {normalize(n) for n in alternatives}
-        valid_names = exact | aliases
+        keywords = site[0] if site else "|".join((name,*alternatives))
         try:
-            data = self.routes._call("/v5/place/text", {"keywords":"|".join((name,*alternatives)),"region":CITYCODE[city],
+            data = self.routes._call("/v5/place/text", {"keywords":keywords,"region":CITYCODE[city],
                     "city_limit":"true","show_fields":"business","page_size":"12"}, timeout=6)
         except RouteError as exc:
             return {**base, "status":"unavailable", "reason":str(exc)}
         nearby = []
+        seen_ids = set()
         for row in data.get("pois") or []:
             key = normalize(row["name"]) if isinstance(row.get("name"), str) else ""
-            if (row.get("citycode") != CITYCODE[city] or key not in valid_names
+            if (row.get("citycode") != CITYCODE[city]
                     or not str(row.get("typecode","")).startswith(POI_TYPES[kind])):
+                continue
+            address = info_text(row,"address")
+            branch_match = key in branch_names and address and normalize(branch[1]) in normalize(address)
+            if key not in exact and key not in aliases and not branch_match:
                 continue
             try:
                 lng, lat = map(float, row["location"].split(","))
@@ -150,15 +183,35 @@ class DayFacts:
             except (AttributeError, KeyError, ValueError, TypeError):
                 continue
             alias = key in aliases
-            limit = .10 if alias else 1.5 if site else .22 if kind == "restaurant" else .28
-            if km <= limit:
+            limit = .10 if alias or branch_match else 1.5 if site else .22 if kind == "restaurant" else .28
+            poi_id = row.get("id")
+            if km <= limit and (not poi_id or poi_id not in seen_ids):
                 nearby.append((alias,km,row))
+                if poi_id:
+                    seen_ids.add(poi_id)
         candidates = [item for item in nearby if not item[0]] or nearby
+        if len(candidates) > 1 and branch and all(
+                info_text(row,"address") and normalize(branch[1]) in normalize(info_text(row,"address"))
+                for _,_,row in candidates):
+            reports = []
+            for _,_,row in sorted(candidates, key=lambda item: item[1]):
+                fields = row.get("business")
+                fields = fields if isinstance(fields,dict) else {}
+                hours = info_text(fields,"opentime_week") or info_text(fields,"opentime_today")
+                if hours:
+                    reports.append({"name":row["name"],"hours":hours})
+            if len({report["hours"] for report in reports}) > 1:
+                map_params["keyword"] = candidates[0][2]["name"]
+                return {**base,"status":"hours_conflict","address":branch[1],"hoursOptions":reports,
+                        "mapUrl":"https://uri.amap.com/search?" + urlencode(map_params)}
+            candidates = [min(candidates,key=lambda item: item[1])]
         if len(candidates) != 1:
             return {**base, "status":"ambiguous" if candidates else "unmatched"}
         alias, distance, matched = candidates[0]
         business = matched.get("business")
         business = business if isinstance(business,dict) else {}
+        if notice and notice.get("checkDateSchedule"):
+            business = {}
         map_params["keyword"] = matched["name"]
         return {**base, "status":"alias_match" if alias else "site_match" if distance > .28 else "matched",
                 "mapUrl":"https://uri.amap.com/search?" + urlencode(map_params),

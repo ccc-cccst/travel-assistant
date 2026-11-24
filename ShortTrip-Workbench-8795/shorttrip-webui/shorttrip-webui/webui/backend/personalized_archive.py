@@ -114,6 +114,7 @@ def load_archive(directory: Path, snapshot_roots: Path, *, final=True, job_id=No
                 "candidateId": candidate_id, "first": candidate_id == first_id,
                 "recommended": candidate_id == recommended, "alternative": alternatives.get(candidate_id),
                 "snapshot": data, "snapshotId": snapshot["snapshot_id"], "coordinateSystem": "GCJ-02",
+                "referencePreview": snapshot.get("verification_scope", {}).get("historical_city_reference", False),
                 "requestId": spec.get("request_id"), "requestRevision": spec["request_revision"],
                 "modelProvider": spec.get("model_provider"),
                 "fromModelSketch": candidate.get("source") == "model",

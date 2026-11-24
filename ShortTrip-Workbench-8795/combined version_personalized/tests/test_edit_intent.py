@@ -43,6 +43,42 @@ class EditIntentTests(unittest.TestCase):
         result = self.interpret(text, action="replace", activity="lunch3", place="餐厅甲")
         self.assertEqual(result["operations"], [{"action": "replace", "activity": "lunch3", "place": "餐厅甲"}])
 
+    def test_overview_asks_which_lunch_even_if_the_model_supplies_a_day(self):
+        self.payload["day"] = None
+        text = "帮我把午餐改到12点开始。"
+        edit = {"action": "time", "activity": "lunch2", "start": "12:00", "end": "13:00"}
+        result = self.interpret(text, day=2, **edit)
+        self.assertEqual(result["state"], "clarify")
+        self.assertRegex(result["message"], "第几天.*午餐")
+        self.assertNotIn("operations", result)
+        self.assertNotIn("proposal", result)
+        self.payload["focus"] = "lunch2"
+        self.assertEqual(self.interpret(text, **edit)["state"], "action")
+
+    def test_open_day_and_named_activity_keep_their_actual_target(self):
+        text = "把午餐改到12:15–13:15"
+        edit = {"action": "time", "start": "12:15", "end": "13:15"}
+        self.assertEqual(self.interpret(text, activity="lunch3", **edit)["state"], "clarify")
+        self.assertEqual(self.interpret(text, activity="lunch2", **edit)["state"], "action")
+        self.payload["day"] = None
+        self.payload["activities"][1]["name"] = "浦江面馆"
+        text = "把浦江面馆这顿午餐改到12:15–13:15"
+        self.assertEqual(self.interpret(text, activity="lunch3", **edit)["state"], "action")
+
+    def test_batch_cannot_infer_scope_for_repeated_lunches(self):
+        self.payload["day"] = None
+        result = self.interpret("午餐换本帮菜，下午轻松点", action="batch", day=2,
+                                operations=[{"action": "meal_options", "activity": "lunch2", "cuisine": "本帮菜"}])
+        self.assertEqual(result["state"], "clarify")
+        self.assertNotIn("proposal", result)
+
+    def test_new_restaurant_does_not_identify_which_lunch_to_replace(self):
+        self.payload["day"] = None
+        self.payload["activities"][1]["name"] = "餐厅甲"
+        result = self.interpret("午餐换成餐厅甲", action="replace", activity="lunch2", place="餐厅甲")
+        self.assertEqual(result["state"], "clarify")
+        self.assertRegex(result["message"], "第几天.*午餐")
+
     def test_ambiguous_branch_yields_explicit_choices(self):
         result = self.interpret("第三天午餐换餐厅乙", action="replace", activity="lunch3", place="餐厅乙")
         self.assertEqual([op["place"] for op in result["operations"]], ["餐厅乙静安店", "餐厅乙黄浦店"])

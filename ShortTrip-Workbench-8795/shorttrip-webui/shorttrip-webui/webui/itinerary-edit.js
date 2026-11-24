@@ -10,7 +10,7 @@
   labels.batch = "组合修改";
   const statusText = 'role="status"';
 
-  window.createItineraryEditor = function ({open, close, active, current, adoptVersion, original, lookup}) {
+  window.createItineraryEditor = function ({open, close, active, current, adoptVersion, original, lookup, streetTiles, restaurantCatalog}) {
     const post = (path, body) => API.itineraryEdit(path, body);
     const get = (path, query) => API.itineraryEdit(path, null, query);
     const prewarm = base => {
@@ -284,60 +284,159 @@
 
     function replace(item, cuisine = "") {
       const base = current();
+      const place = {attraction:"景点", restaurant:"餐馆", hotel:"酒店"}[item.kind];
+      if (!base || !place) return;
       prewarm(base);
-      const place = {attraction:"景点", restaurant:"饭店", hotel:"酒店"}[item.kind];
       const unit = {attraction:"元/人", restaurant:"元/人", hotel:"元/间夜"}[item.kind];
       const isMeal = item.kind === "restaurant";
       const scope = item.kind === "hotel" ? "同一家酒店的连续住宿会一起更换。"
         : "保留原定时段，并核验营业时间和前后接驳。";
-      const panel = show(`<h3>更换「${esc(item.name)}」</h3>
-        <form id="searchEditPlaces"><label>搜索${place} <input name="q" maxlength="120" placeholder="输入${place}名称"></label><button>搜索</button>
-        ${isMeal ? '<button id="recommendMeals" type="button">按接驳推荐</button>' : ""}</form>
-        <label>选择${place}<select id="editPlaces"></select></label>
-        <p class="compare-note">${isMeal ? "可按店名搜索，或按前后两站的接驳推荐。" : "候选按与原地点的直线距离排序。"}${scope}
-        ${cuisine ? " 推荐菜系 · " + esc(cuisine) : ""}</p>
-        <p ${statusText} class="edit-error"></p>`, '<button data-close>取消</button>' + button("checkReplacement","试排并核验"));
-      const select = panel.querySelector("#editPlaces"), error = panel.querySelector(".edit-error");
+      const panel = show(`<section class="replace-picker">
+        <h3>更换${place}</h3>
+        <p class="replace-original">当前${place} <strong>${esc(item.name)}</strong></p>
+        <div class="replace-grid">
+          <div class="replace-map-panel">
+            <div class="replace-map" aria-label="候选${place}地图"></div>
+            <button class="replace-search-area" type="button" disabled>搜地图区域</button>
+            <p class="replace-map-notice" role="status" hidden>高德底图加载失败，可从下方或右侧列表选点。</p>
+          </div>
+          <div class="replace-results">
+            <form id="searchEditPlaces"><input name="q" type="search" maxlength="120" aria-label="搜索${place}" placeholder="搜索${place}名称"><button>搜索</button></form>
+            ${isMeal ? '<button id="recommendMeals" type="button">按接驳推荐</button>' : ""}
+            <p class="replace-status" role="status"></p>
+            <ul class="replace-list" aria-label="候选${place}"></ul>
+          </div>
+        </div>
+        <p class="compare-note replace-scope">${esc(scope)}${cuisine ? " 推荐菜系为" + esc(cuisine) + "。" : ""}</p>
+        <p class="replace-selection" role="status">点地图或列表选择${place}。</p>
+        </section>`, '<button data-close>取消</button>' + button("checkReplacement","试排并核验"));
+      const status = panel.querySelector(".replace-status");
       const check = panel.querySelector("#checkReplacement");
+      const mapElement = panel.querySelector(".replace-map");
+      const notice = panel.querySelector(".replace-map-notice");
+      const list = panel.querySelector(".replace-list");
+      const selection = panel.querySelector(".replace-selection");
+      const search = panel.querySelector('[name="q"]');
+      const area = panel.querySelector(".replace-search-area");
+      const map = L.map(mapElement, {scrollWheelZoom:false, maxZoom:18});
+      const tiles = streetTiles({maxNativeZoom:17}).addTo(map);
+      const candidateLayer = L.layerGroup().addTo(map);
+      const validPosition = pos => Array.isArray(pos) && pos.length === 2 && pos.every(Number.isFinite);
+      const anchor = validPosition(item.pos) ? item.pos : null;
+      const markerIcon = (label, style = "") => L.divIcon({
+        className:"replace-pin " + style, html:label, iconSize:[30,30],
+      });
+      if (anchor) {
+        L.marker(anchor, {icon:markerIcon("原", "replace-pin-original"), title:"当前" + place})
+          .bindTooltip(esc(item.name)).addTo(map);
+        map.setView(anchor, 14, {animate:false});
+        area.disabled = false;
+      }
+      tiles.on("load", () => {notice.hidden = Boolean(mapElement.querySelector(".leaflet-tile-loaded"));});
+      const resizer = new ResizeObserver(() => map.invalidateSize({pan:false}));
+      resizer.observe(mapElement);
+      const observer = new MutationObserver(() => {
+        if (active(panel)) return;
+        observer.disconnect();
+        resizer.disconnect();
+        map.remove();
+      });
+      observer.observe(panel.parentElement, {childList:true});
+      observer.observe(panel.parentElement.parentElement, {attributes:true,attributeFilter:["hidden"]});
       let sequence = 0;
-      async function find(q = "") {
+      let selected = null;
+      let choices = [];
+      function select(choice, fromMap) {
+        selected = choice.entry;
+        for (const row of choices) {
+          const active = row === choice;
+          row.button.setAttribute("aria-pressed", String(active));
+          row.marker?.getElement()?.classList.toggle("replace-pin-selected", active);
+          row.marker?.setZIndexOffset(active ? 1000 : 0);
+        }
+        if (fromMap) {
+          const row = choice.button.parentElement;
+          if (row.offsetTop < list.scrollTop) list.scrollTop = row.offsetTop;
+          else if (row.offsetTop + row.offsetHeight > list.scrollTop + list.clientHeight) {
+            list.scrollTop = row.offsetTop + row.offsetHeight - list.clientHeight;
+          }
+        } else if (choice.marker) {
+          map.panInside(choice.marker.getLatLng(), {padding:[36,36], animate:false});
+        }
+        selection.textContent = "已选 " + selected.name;
+        check.disabled = false;
+      }
+      function showChoices(entries, keepView) {
+        const positions = anchor ? [anchor] : [];
+        choices = entries.map((entry, index) => {
+          const distance = entry.km == null ? "" : "距原地点约 " + entry.km.toFixed(1) + " 公里（直线）";
+          const price = entry.price != null && Number.isFinite(Number(entry.price)) ? "参考 " + Number(entry.price) + " " + unit : "";
+          const transfer = entry.minutes == null ? "" : "前后接驳 " + entry.minutes + " 分钟";
+          const meta = [transfer, distance, price].filter(Boolean).join(" · ");
+          const row = document.createElement("li");
+          row.innerHTML = `<button class="replace-choice" type="button" aria-pressed="false">
+            <span class="replace-number">${index + 1}</span><span><strong>${esc(entry.name)}</strong>
+            ${meta ? `<small>${esc(meta)}</small>` : ""}</span></button>`;
+          const button = row.firstElementChild;
+          const choice = {entry, button, marker:null};
+          if (validPosition(entry.pos)) {
+            positions.push(entry.pos);
+            choice.marker = L.marker(entry.pos, {icon:markerIcon(index + 1), title:entry.name})
+              .bindTooltip(esc(entry.name)).addTo(candidateLayer);
+            choice.marker.on("click", () => select(choice, true));
+          }
+          button.onclick = () => select(choice, false);
+          list.append(row);
+          return choice;
+        });
+        if (positions.length && !keepView) map.fitBounds(positions, {padding:[38,38],maxZoom:16,animate:false});
+        if (positions.length) area.disabled = false;
+      }
+      async function find(q = "", bounds) {
         const ticket = ++sequence;
         check.disabled = true;
-        const recommend = isMeal && !q.trim();
-        error.textContent = recommend ? "正在计算用餐前后的接驳…" : "正在查找" + place + "…";
-        select.replaceChildren();
+        selected = null;
+        selection.textContent = "点地图或列表选择" + place + "。";
+        candidateLayer.clearLayers();
+        list.replaceChildren();
+        const recommend = isMeal && !bounds && !q.trim();
+        status.textContent = recommend ? "正在计算用餐前后的接驳…" : "正在查找" + place + "…";
+        const stillHere = () => ticket === sequence && active(panel) && matches(base);
         try {
-          const stillHere = () => ticket === sequence && active(panel) && matches(base);
           let entries;
           if (recommend) {
+            const catalog = restaurantCatalog().catch(() => []);
             const result = await settle(base, {action:"meal_options", activity:item.uid,
               ...(cuisine ? {cuisine} : {})}, stillHere);
             if (!result) return;
             if (result.state !== "complete") throw new Error(result.message);
-            entries = result.meal_options;
+            const positions = new Map((await catalog).map(entry => [entry.name, entry.pos]));
+            entries = result.meal_options.map(entry => ({...entry, pos:positions.get(entry.name)}));
           } else {
-            entries = await post("places", {...base, activity:item.uid, q});
+            entries = await post("places", {...base, activity:item.uid, q, bounds});
           }
           if (!stillHere()) return;
-          select.replaceChildren(...entries.map(entry => {
-            const distance = entry.km == null ? "" : " · 约 " + entry.km.toFixed(1) + " 公里";
-            const price = entry.price != null && Number.isFinite(Number(entry.price)) ? " · 参考 " + Number(entry.price) + " " + unit : "";
-            const transfer = entry.minutes == null ? "" : ` · 两段 ${entry.minutes} 分钟（${entry.walking_minutes} 分钟步行）`;
-            return new Option(entry.name + transfer + distance + price, entry.name);
-          }));
-          error.textContent = entries.length ? "" : recommend ? "本次未找到符合用餐条件的推荐。也可以按店名搜索。" : "没有找到可选" + place + "。";
-          check.disabled = !entries.length;
-        } catch (failure) { if (ticket === sequence) error.textContent = failure.message; }
+          showChoices(entries, Boolean(bounds));
+          if (entries.length) status.textContent = entries.length + " 个候选";
+          else if (bounds) status.textContent = "本区域没有匹配的" + place + "。可移动地图或修改搜索词。";
+          else status.textContent = recommend ? "暂未找到按接驳推荐的餐馆。可按店名或地图区域搜索。" : "没有找到匹配的" + place + "。";
+        } catch (failure) { if (stillHere()) status.textContent = failure.message; }
       }
       panel.querySelector("form").onsubmit = event => {
         event.preventDefault();
-        void find(new FormData(event.currentTarget).get("q"));
+        void find(search.value);
+      };
+      area.onclick = () => {
+        const bounds = map.getBounds();
+        void find(search.value, [bounds.getSouth(), bounds.getWest(), bounds.getNorth(), bounds.getEast()]);
       };
       if (isMeal) panel.querySelector("#recommendMeals").onclick = () => {
-        panel.querySelector('[name="q"]').value = "";
+        search.value = "";
         void find();
       };
-      check.onclick = () => void trial(base, {action:"replace", activity:item.uid, place:select.value});
+      check.onclick = () => {
+        if (selected) void trial(base, {action:"replace", activity:item.uid, place:selected.name});
+      };
       void find();
     }
     function replaceMeal(name, days, day) {

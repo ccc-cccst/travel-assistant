@@ -178,7 +178,7 @@ def _include_trial_candidate(archive, assessment, entry, assessed, limit):
 def run_trip_plan(spec, folder, env, facts, *, model=False, saved_layouts=None, seconds=24, candidates=6,
                   improve_meals=True, saved_snapshot=None, sketch_provider=None, finish_by=None,
                   recovery_retry=False, quality_seconds=0, search_deadline=None, targeted_trial=None,
-                  model_after_search=False):
+                  model_after_search=False, extend_search=True):
     """Run all four stages and publish a compact preview only after full verification."""
     started = perf_counter()
     if saved_snapshot is None:
@@ -401,7 +401,7 @@ def run_trip_plan(spec, folder, env, facts, *, model=False, saved_layouts=None, 
                 save(folder / 'VISIT_REFINEMENT.json', visits)
                 if visits['state'] == 'verified_variant':
                     save(folder / 'CANDIDATE_ARCHIVE.json', archive)
-        if search_deadline is not None and assessment['selection']['recommended_id']:
+        if extend_search and search_deadline is not None and assessment['selection']['recommended_id']:
             free = candidates - len(archive['archive'])
             remaining = cutoff - perf_counter() - 3
             if free > 0 and remaining > .5:
